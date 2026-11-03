@@ -1,0 +1,8 @@
+11-03 22:27:18.055 30433 30563 I OPENHU  : [64] SdlFrameRelay.draw | SDL relay: scaled frames=1 output=800x480
+11-03 22:27:25.174 30433 30563 I OPENHU  : [64] SdlFrameRelay.draw | SDL relay: scaled frames=150 output=800x480
+11-03 22:27:32.306 30433 30563 I OPENHU  : [64] SdlFrameRelay.draw | SDL relay: scaled frames=300 output=800x480
+11-03 22:27:39.342 30433 30563 I OPENHU  : [64] SdlFrameRelay.draw | SDL relay: scaled frames=450 output=800x480
+11-03 22:27:46.477 30433 30563 I OPENHU  : [64] SdlFrameRelay.draw | SDL relay: scaled frames=600 output=800x480
+11-03 22:27:53.778 30433 30563 I OPENHU  : [64] SdlFrameRelay.draw | SDL relay: scaled frames=750 output=800x480
+11-03 22:28:01.043 30433 30563 I OPENHU  : [64] SdlFrameRelay.draw | SDL relay: scaled frames=900 output=800x480
+11-03 22:28:01.086 30433 30563 I SDL_SELFTEST: PASS frames=900 encodedPackets=902
