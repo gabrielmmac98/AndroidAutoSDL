@@ -1,0 +1,5 @@
+--------- beginning of main
+11-03 23:18:16.904 27694 27694 I SDL_PROFILE_TEST: PASS 800x480 square pixels; DPI 160/200; normal preferences preserved
+11-03 23:20:34.176 29101 29101 I SDL_PROFILE_TEST: PASS 800x480 square pixels; DPI 160/200; normal preferences preserved
+11-03 23:21:01.270 29471 29471 I SDL_PROFILE_TEST: PASS 800x480 square pixels; DPI 160/200; normal preferences preserved
+UI verificada no emulador: página sem barra sobreposta, início de vídeo desabilitado sem central. DPI selecionado 200: arquivo sdl_projection.xml contém dpi=200; após force-stop e reabertura, página continuou mostrando DPI 200. Preferências comuns preservadas no teste. Sessão Toyota e página durante streaming não verificadas fisicamente.

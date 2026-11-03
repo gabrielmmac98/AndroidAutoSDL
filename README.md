@@ -34,3 +34,5 @@ Teste mais recente: Bridge 0.6 — App ID 3610601450 preservado; nome AA SDL Bri
 Versão atual: Bridge 0.7 — identidade TomTom restaurada, escala explícita de vídeo via EGL e correções de recuperação. Veja artifacts/AndroidAutoSDL-Bridge/v0.7/analise-e-teste.md. Validação Toyota pendente.
 
 Versão atual: Bridge 0.8 — corrige falso display stall local que encerrava vídeo SDL funcional. Sucesso de imagem e toque na Toyota confirmado pelo usuário na 0.7; estabilidade da 0.8 pendente.
+
+Versão atual: Bridge 0.9 — página e perfil dedicados à projeção SDL, resolução do carro, DPI separado e controles no telefone. Veja artifacts/AndroidAutoSDL-Bridge/v0.9/fluxo-sdl.md. Validação física pendente.

@@ -1,0 +1,1463 @@
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+index 9218cbb..f2aeace 100644
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -123,6 +123,10 @@ android {
+         }
+         create("github") {
+             dimension = "distribution"
++            // Keep this experimental bridge install separate from the Play Store Open Headunit.
++            applicationId = "br.local.aasdlbridge"
++            versionCode = 129
++            versionNameSuffix = "-bridge09"
+             // Default minSdk 16 from defaultConfig is used
+         }
+     }
+@@ -249,6 +253,14 @@ android {
+ }
+ 
+ dependencies {
++    // Experimental Android Auto -> Toyota SDL bridge; protocol/session handling uses SDL 4.x.
++    implementation("com.smartdevicelink:sdl_android:4.12.2") {
++        // SDL's legacy android.arch.lifecycle:extensions transitively pulls support-v4 26.1.0,
++        // which collides with this AndroidX-only receiver. SDL's client APIs used here do not
++        // reference the old lifecycle classes.
++        exclude(group = "android.arch.lifecycle", module = "extensions")
++    }
++
+     // Conscrypt (Flavor specific: 2.6.1 for Playstore 16KB alignment; 2.5.3 for Github minSdk 16)
+     "playstoreImplementation"("org.conscrypt:conscrypt-android:2.6.1")
+     "githubImplementation"("org.conscrypt:conscrypt-android:2.5.3")
+@@ -314,3 +326,4 @@ kotlin {
+         jvmTarget.set(JvmTarget.JVM_1_8)
+     }
+ }
++
+diff --git a/app/src/debug/AndroidManifest.xml b/app/src/debug/AndroidManifest.xml
+new file mode 100644
+index 0000000..f48f722
+--- /dev/null
++++ b/app/src/debug/AndroidManifest.xml
+@@ -0,0 +1 @@
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"><application><activity android:name="com.andrerinas.openheadunit.sdl.SdlRelaySelfTestActivity" android:exported="true" /><activity android:name="com.andrerinas.openheadunit.sdl.SdlProfileSelfTestActivity" android:exported="true" /></application></manifest>
+\ No newline at end of file
+diff --git a/app/src/debug/java/com/andrerinas/openheadunit/sdl/SdlProfileSelfTestActivity.kt b/app/src/debug/java/com/andrerinas/openheadunit/sdl/SdlProfileSelfTestActivity.kt
+new file mode 100644
+index 0000000..fe84f29
+--- /dev/null
++++ b/app/src/debug/java/com/andrerinas/openheadunit/sdl/SdlProfileSelfTestActivity.kt
+@@ -0,0 +1,26 @@
++package com.andrerinas.openheadunit.sdl
++import android.app.Activity
++import android.os.Bundle
++import android.content.Intent
++import android.util.Log
++import com.andrerinas.openheadunit.App
++import com.andrerinas.openheadunit.utils.HeadUnitScreenConfig
++class SdlProfileSelfTestActivity: Activity(){
++ override fun onCreate(state:Bundle?){super.onCreate(state)
++  val settings=App.provide(this).settings
++  val priorDpi=settings.dpiPixelDensity;val priorResolution=settings.resolutionId
++  try {
++   SdlSessionProfile.active=true;SdlSessionProfile.panelWidth=800;SdlSessionProfile.panelHeight=480
++   for(dpi in listOf(160,200)) {
++    SdlSessionProfile.dpi=dpi
++    val g=HeadUnitScreenConfig.announceGeometry(Any(),this,resources.displayMetrics,settings)
++    check(g.width==800 && g.height==480 && g.pixelAspectRatioE4==10000)
++    check(g.densityDecision.announced==dpi && g.widthMargin==0 && g.heightMargin==0)
++    check(HeadUnitScreenConfig.getNegotiatedWidth()==800 && HeadUnitScreenConfig.getNegotiatedHeight()==480)
++   }
++   check(priorDpi==settings.dpiPixelDensity && priorResolution==settings.resolutionId)
++   Log.i("SDL_PROFILE_TEST","PASS 800x480 square pixels; DPI 160/200; normal preferences preserved")
++  }catch(e:Throwable){Log.e("SDL_PROFILE_TEST","FAIL",e)}finally{SdlSessionProfile.active=false;SdlSessionProfile.dpi=160}
++  startActivity(Intent(this,SdlControlActivity::class.java));finish()
++ }
++}
+diff --git a/app/src/debug/java/com/andrerinas/openheadunit/sdl/SdlRelaySelfTestActivity.java b/app/src/debug/java/com/andrerinas/openheadunit/sdl/SdlRelaySelfTestActivity.java
+new file mode 100644
+index 0000000..34041eb
+--- /dev/null
++++ b/app/src/debug/java/com/andrerinas/openheadunit/sdl/SdlRelaySelfTestActivity.java
+@@ -0,0 +1,10 @@
++package com.andrerinas.openheadunit.sdl;
++import android.app.Activity;import android.os.*;import android.media.*;import android.graphics.*;import android.view.Surface;import android.util.Log;
++public class SdlRelaySelfTestActivity extends Activity {
++ public void onCreate(Bundle b){super.onCreate(b);HandlerThread thread=new HandlerThread("RelaySelfTest");thread.start();Handler h=new Handler(thread.getLooper());h.post(()->{try{
++ MediaFormat f=MediaFormat.createVideoFormat("video/avc",800,480);f.setInteger(MediaFormat.KEY_COLOR_FORMAT,0x7f000789);f.setInteger(MediaFormat.KEY_BIT_RATE,1500000);f.setInteger(MediaFormat.KEY_FRAME_RATE,30);f.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL,1);
++ MediaCodec c=MediaCodec.createEncoderByType("video/avc");c.configure(f,null,null,MediaCodec.CONFIGURE_FLAG_ENCODE);Surface input=c.createInputSurface();c.start();final int[] packets={0},sent={0};MediaCodec.BufferInfo info=new MediaCodec.BufferInfo();Runnable drain=()->{int id;while((id=c.dequeueOutputBuffer(info,0))>=0){if(info.size>0)packets[0]++;c.releaseOutputBuffer(id,false);}};
++ SdlFrameRelay relay=new SdlFrameRelay(input,800,480,h,drain);relay.setInputSize(1080,1920);
++ Runnable tick=new Runnable(){public void run(){try{if(sent[0]<getIntent().getIntExtra("frames",45)){Canvas canvas=relay.surface().lockCanvas(null);canvas.drawColor(Color.rgb((sent[0]*5)%255,60,150));relay.surface().unlockCanvasAndPost(canvas);sent[0]++;h.postDelayed(this,33);}else{drain.run();Log.i("SDL_SELFTEST",packets[0]>10?"PASS frames="+sent[0]+" encodedPackets="+packets[0]:"FAIL encodedPackets="+packets[0]);relay.close();c.stop();c.release();input.release();thread.quitSafely();runOnUiThread(()->finish());}}catch(Exception e){Log.e("SDL_SELFTEST","FAIL tick",e);}}};h.post(tick);
++ }catch(Exception e){Log.e("SDL_SELFTEST","FAIL setup",e);}});}
++}
+\ No newline at end of file
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+index f138e17..013db61 100644
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -31,6 +31,9 @@
+     <uses-feature
+         android:name="android.hardware.usb.host"
+         android:required="false" />
++    <uses-feature
++        android:name="android.hardware.usb.accessory"
++        android:required="false" />
+     <uses-feature
+         android:name="android.hardware.screen.landscape"
+         android:required="false" />
+@@ -54,7 +57,7 @@
+         android:required="false" />
+ 
+     <permission
+-        android:name="com.andrerinas.openheadunit.permission.NAVIGATION_UPDATE"
++        android:name="${applicationId}.permission.NAVIGATION_UPDATE"
+         android:protectionLevel="signature" />
+ 
+     <uses-permission android:name="android.permission.TURN_SCREEN_ON" />
+@@ -115,6 +118,7 @@
+         android:largeHeap="true"
+         android:supportsRtl="true"
+         tools:ignore="GoogleAppIndexingWarning">
++        <activity android:name=".sdl.SdlControlActivity" android:exported="false" />
+ 
+         <activity
+             android:name=".aap.AapProjectionActivity"
+@@ -160,6 +164,13 @@
+             android:launchMode="singleTask"
+             android:theme="@style/SplashTheme">
+ 
++            <intent-filter>
++                <action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
++            </intent-filter>
++            <meta-data
++                android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED"
++                android:resource="@xml/sdl_accessories" />
++
+             <!-- Primary Launcher Filter -->
+             <intent-filter>
+                 <action android:name="android.intent.action.MAIN" />
+diff --git a/app/src/main/java/com/andrerinas/openheadunit/AppComponent.kt b/app/src/main/java/com/andrerinas/openheadunit/AppComponent.kt
+index 0d182b4..80bcc60 100644
+--- a/app/src/main/java/com/andrerinas/openheadunit/AppComponent.kt
++++ b/app/src/main/java/com/andrerinas/openheadunit/AppComponent.kt
+@@ -11,6 +11,7 @@ import com.andrerinas.openheadunit.connection.carkey.CarKeysManager
+ import com.andrerinas.openheadunit.utils.SUExecutor
+ import com.andrerinas.openheadunit.utils.Settings
+ import com.andrerinas.openheadunit.aap.NightOverlayState
++import com.andrerinas.openheadunit.sdl.SdlBridgeController
+ 
+ class AppComponent(private val app: App) {
+ 
+@@ -30,6 +31,10 @@ class AppComponent(private val app: App) {
+ 
+     val commManager = CommManager(app, settings, audioDecoder, videoDecoder)
+ 
++    // Process-lifetime owner: the SDL transport must survive while Self Mode's projection
++    // Activity is in the foreground.
++    val sdlBridge = SdlBridgeController(app)
++
+     val suExecutor = SUExecutor()
+ 
+     val carKeysManager = CarKeysManager()
+diff --git a/app/src/main/java/com/andrerinas/openheadunit/aap/AapProjectionActivity.kt b/app/src/main/java/com/andrerinas/openheadunit/aap/AapProjectionActivity.kt
+index 52f0a6a..fdf940e 100644
+--- a/app/src/main/java/com/andrerinas/openheadunit/aap/AapProjectionActivity.kt
++++ b/app/src/main/java/com/andrerinas/openheadunit/aap/AapProjectionActivity.kt
+@@ -93,6 +93,9 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
+     private val cachedKeyCodes: Map<Int, Int> by lazy { settings.keyCodes }
+     private var isSurfaceSet = false
+     private var ownedSurface: android.view.Surface? = null
++    /** The decoder may target SDL's encoder Surface while [ownedSurface] remains the local view. */
++    private var decoderSurface: android.view.Surface? = null
++    private var decoderSurfaceIsSdl = false
+     private var overlayState = OverlayState.STARTING
+     private val watchdogHandler = android.os.Handler(android.os.Looper.getMainLooper())
+     private val isProjectionPausedByDevice: Boolean
+@@ -286,6 +289,8 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
+      * release/regain cycle instead, and why each gate is there.
+      */
+     private fun maybeRecoverWarmRelaunch() {
++        // The local view is intentionally idle while frames are routed to the car.
++        if (decoderSurfaceIsSdl || App.provide(this).sdlBridge.isVideoReady) return
+         if (isProjectionPausedByDevice) return
+         if (lastSurfaceSetMs == 0L) return
+         val now = SystemClock.elapsedRealtime()
+@@ -644,9 +649,13 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
+                 projectionView.removeCallback(this)
+                 videoDecoder.softwareYuvFrameSink = null
+                 ownedSurface?.let {
+-                    videoDecoder.detachSurfaceIfCurrent(it, DecoderStopPolicy.REASON_PROJECTION_VIEW_RECREATE)
++                    val target = decoderSurface ?: it
++                    videoDecoder.detachSurfaceIfCurrent(target, DecoderStopPolicy.REASON_PROJECTION_VIEW_RECREATE)
++                    if (decoderSurfaceIsSdl) App.provide(this@AapProjectionActivity).sdlBridge.closeVideoOutput()
+                 } ?: AppLog.i("Decoder detach (projection_view_recreate) skipped: activity has no owned surface")
+                 ownedSurface = null
++                decoderSurface = null
++                decoderSurfaceIsSdl = false
+                 container.removeView(projectionView as View)
+             }
+             isSurfaceSet = false
+@@ -715,6 +724,8 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
+     private val rendererConfirmPhoneAliveMs = 4000L
+ 
+     private fun maybeRecoverFromDisplayStall() {
++        // The local view is intentionally idle while frames are routed to the car.
++        if (decoderSurfaceIsSdl || App.provide(this).sdlBridge.isVideoReady) return
+         if (!::projectionView.isInitialized) return
+         if (overlayState != OverlayState.HIDDEN) return
+         // SurfaceView has no per-frame draw callback (-1) and is already the robust fallback path.
+@@ -804,6 +815,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
+     /** Offer the renderer confirmation when the phone is actively streaming video but nothing has
+      * been drawn for a while (the broken-renderer case that cannot be detected automatically). */
+     private fun maybeOfferRendererConfirm() {
++        if (com.andrerinas.openheadunit.sdl.SdlSessionProfile.active) return
+         if (rendererConfirmResolved || rendererBanner != null) return
+         if (videoDecoder.lastFrameRenderedMs > 0L) return
+         val input = videoDecoder.lastInputBytesReceivedMs
+@@ -1098,6 +1110,30 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
+         registerAudioModeListener()
+ 
+         setContentView(R.layout.activity_headunit)
++        if (com.andrerinas.openheadunit.sdl.SdlSessionProfile.active) {
++            window.decorView.post {
++                val panel = android.widget.LinearLayout(this).apply {
++                    orientation = android.widget.LinearLayout.VERTICAL
++                    setPadding(40,80,40,40)
++                    setBackgroundColor(android.graphics.Color.rgb(18,30,38))
++                    isClickable = true
++                    addView(android.widget.TextView(this@AapProjectionActivity).apply {
++                        text = "Transmitindo para a central\n\nImagem e toques disponíveis na Toyota PLAY+.\nA tela do telefone controla apenas a transmissão."
++                        textSize=22f;setTextColor(android.graphics.Color.WHITE)
++                    })
++                    addView(android.widget.Button(this@AapProjectionActivity).apply {
++                        text="Configurações da transmissão"
++                        setOnClickListener { startActivity(Intent(this@AapProjectionActivity,com.andrerinas.openheadunit.sdl.SdlControlActivity::class.java)) }
++                    })
++                    addView(android.widget.Button(this@AapProjectionActivity).apply {
++                        text="Parar vídeo"
++                        setOnClickListener { androidx.core.content.ContextCompat.startForegroundService(this@AapProjectionActivity,Intent(this@AapProjectionActivity,AapService::class.java).setAction(AapService.ACTION_STOP_SELF_MODE)) }
++                    })
++                }
++                addContentView(panel, android.view.ViewGroup.LayoutParams(-1,-1))
++                panel.bringToFront()
++            }
++        }
+ 
+         if (settings.showPerformanceOverlay) {
+             attachPerformanceOverlay()
+@@ -1369,7 +1405,11 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
+     }
+ 
+     private fun releaseDecoderAfterCover() {
+-        val surface = ownedSurface
++        if (decoderSurfaceIsSdl && App.provide(this).sdlBridge.isVideoReady) {
++            AppLog.i("SDL bridge: keeping decoder active while phone UI is covered")
++            return
++        }
++        val surface = decoderSurface ?: ownedSurface
+         if (surface == null) {
+             AppLog.i("Decoder stop (activity_stopped) skipped: activity has no owned surface")
+         } else {
+@@ -1380,6 +1420,13 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
+ 
+     override fun onResume() {
+         super.onResume()
++        App.provide(this).sdlBridge.onVideoReadyChanged = {
++            runOnUiThread {
++                ownedSurface?.let { current ->
++                    if (ownedSurface === current && !isFinishing) bindDecoderOutput(current)
++                }
++            }
++        }
+         isForeground = true
+         userLeftDeliberately = false
+         closeCallRaiseEpisode("the projection is back in front")
+@@ -2259,13 +2306,12 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
+     override fun onSurfaceChanged(surface: android.view.Surface, width: Int, height: Int) {
+         AppLog.i("[UI_DEBUG] [AapProjectionActivity] onSurfaceChanged. Actual surface dimensions: width=$width, height=$height")
+         val surfaceChanged = relaunchRecovery.onSurfaceChanged(
+-            ownedSurface !== surface || !videoDecoder.isCurrentSurface(surface),
++            ownedSurface !== surface || !videoDecoder.isCurrentSurface(decoderSurface ?: surface),
+             videoDecoder.surfaceStopGeneration,
+         )
+         isSurfaceSet = true
+-
+-        videoDecoder.setSurface(surface)
+         ownedSurface = surface
++        bindDecoderOutput(surface)
+         if (surfaceChanged) {
+             // A replacement target must not strand a pending gain. A resize of the same
+             // target must leave the deliberate release/regain gap intact.
+@@ -2284,7 +2330,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
+                 measuredView.width == width && measuredView.height == height
+             }
+             if (projectionView === measuredView && ownedSurface === surface &&
+-                videoDecoder.isCurrentSurface(surface) && dimensionsCurrent) {
++                decoderSurface?.let { videoDecoder.isCurrentSurface(it) } == true && dimensionsCurrent) {
+                 updateSurfaceGeometry(width, height)
+             }
+         }
+@@ -2329,6 +2375,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
+ 
+     /** Only a surface belonging to the completed root layout may change persistent geometry. */
+     private fun updateSurfaceGeometry(width: Int, height: Int) {
++        if (com.andrerinas.openheadunit.sdl.SdlSessionProfile.active) return
+         val prevUsableW = HeadUnitScreenConfig.getUsableWidth()
+         val prevUsableH = HeadUnitScreenConfig.getUsableHeight()
+         val anchorMoved = HeadUnitScreenConfig.updateSurfaceDimensions(width, height)
+@@ -2355,14 +2402,21 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
+     }
+ 
+     override fun onSurfaceDestroyed(surface: android.view.Surface) {
+-        if (ownedSurface === surface) ownedSurface = null
++        val ownsSurface = ownedSurface === surface
++        val target = if (ownsSurface) decoderSurface ?: surface else surface
++        val targetWasSdl = ownsSurface && decoderSurfaceIsSdl
++        if (ownsSurface) {
++            ownedSurface = null
++            decoderSurface = null
++            decoderSurfaceIsSdl = false
++        }
+         // A relaunched instance may already own the decoder: on a singleTask relaunch the old
+         // instance's surface teardown is framework-ordered after its onDestroy, and for the GLES
+         // backend one main-looper post later still, so it lands after the new instance's
+         // setSurface. Acting on it then would release video focus for a stream the new instance
+         // is rendering and stop a decoder that was just rebuilt. All surface ownership changes
+         // happen on the main thread, so this read cannot race the send below.
+-        if (!videoDecoder.isCurrentSurface(surface)) {
++        if (!videoDecoder.isCurrentSurface(target)) {
+             AppLog.i("SurfaceCallback: onSurfaceDestroyed for a stale surface - ignoring. Surface: $surface")
+             return
+         }
+@@ -2384,7 +2438,8 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
+                     "a touch - holding video focus so Android Auto keeps its keyboard up"
+             )
+         }
+-        videoDecoder.detachSurfaceIfCurrent(surface, DecoderStopPolicy.REASON_SURFACE_DESTROYED)
++        videoDecoder.detachSurfaceIfCurrent(target, DecoderStopPolicy.REASON_SURFACE_DESTROYED)
++        if (targetWasSdl) App.provide(this).sdlBridge.closeVideoOutput()
+     }
+ 
+ 
+@@ -2440,6 +2495,36 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
+         }
+     }
+ 
++    /**
++     * In bridge mode, Android Auto's decoder renders directly into SDL's encoder Surface. The
++     * view Surface remains owned separately so the existing surface/lifecycle recovery stays valid.
++     */
++    private fun bindDecoderOutput(viewSurface: android.view.Surface) {
++        val bridge = App.provide(this).sdlBridge
++        if (!bridge.isVideoReady) {
++            setDecoderOutput(viewSurface, isSdl = false)
++            return
++        }
++        if (!decoderSurfaceIsSdl) setDecoderOutput(viewSurface, isSdl = false)
++        bridge.requestVideoSurface { sdlSurface ->
++            if (ownedSurface !== viewSurface || isFinishing) return@requestVideoSurface
++            if (sdlSurface != null) setDecoderOutput(sdlSurface, isSdl = true)
++        }
++    }
++
++    private fun setDecoderOutput(target: android.view.Surface, isSdl: Boolean) {
++        val bridge = App.provide(this).sdlBridge
++        val previous = decoderSurface
++        val previousWasSdl = decoderSurfaceIsSdl
++        if (previous !== target || !videoDecoder.isCurrentSurface(target)) videoDecoder.setSurface(target)
++        decoderSurface = target
++        decoderSurfaceIsSdl = isSdl
++        AppLog.i("AapProjectionActivity: decoder output=${if (isSdl) "SDL" else "local"}")
++
++        // setSurface() has stopped the old decoder before we release its SDL encoder target.
++        if (previousWasSdl && previous !== target) bridge.closeVideoOutput()
++    }
++
+     private fun sendTouchEvent(event: MotionEvent) {
+         if (suspendRemoteTouchUntilAllUp) {
+             if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
+@@ -2585,9 +2670,14 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
+         // TextureView/GLES destruction can arrive after this activity removes its callback.
+         // Stop our target now, while it is still valid, without touching a replacement owner.
+         ownedSurface?.let {
+-            videoDecoder.detachSurfaceIfCurrent(it, DecoderStopPolicy.REASON_SURFACE_DESTROYED)
++            val target = decoderSurface ?: it
++            videoDecoder.detachSurfaceIfCurrent(target, DecoderStopPolicy.REASON_SURFACE_DESTROYED)
++            if (decoderSurfaceIsSdl) App.provide(this).sdlBridge.closeVideoOutput()
+         } ?: AppLog.i("Decoder detach (surfaceDestroyed) skipped: activity has no owned surface")
+         ownedSurface = null
++        decoderSurface = null
++        decoderSurfaceIsSdl = false
++        App.provide(this).sdlBridge.onVideoReadyChanged = null
+         isSurfaceSet = false
+         super.onDestroy()
+         ActivityState.release(this, findViewById(R.id.loading_custom_image))
+diff --git a/app/src/main/java/com/andrerinas/openheadunit/aap/protocol/messages/ServiceDiscoveryResponse.kt b/app/src/main/java/com/andrerinas/openheadunit/aap/protocol/messages/ServiceDiscoveryResponse.kt
+index c323f38..a5231e5 100644
+--- a/app/src/main/java/com/andrerinas/openheadunit/aap/protocol/messages/ServiceDiscoveryResponse.kt
++++ b/app/src/main/java/com/andrerinas/openheadunit/aap/protocol/messages/ServiceDiscoveryResponse.kt
+@@ -68,7 +68,7 @@ internal class ServiceDiscoveryResponse(context: Context, audioConfig: AudioSess
+                     val phoneWidthMargin = geometry.widthMargin
+                     val phoneHeightMargin = geometry.heightMargin
+ 
+-                    val effectiveCodec = VideoCodecNegotiationPolicy.select(
++                    val effectiveCodec = if (com.andrerinas.openheadunit.sdl.SdlSessionProfile.active) Media.MediaCodecType.MEDIA_CODEC_VIDEO_H264_BP else VideoCodecNegotiationPolicy.select(
+                         preference = settings.videoCodec,
+                         resolution = negotiatedResolution,
+                         forceSoftware = settings.forceSoftwareDecoding,
+@@ -88,7 +88,7 @@ internal class ServiceDiscoveryResponse(context: Context, audioConfig: AudioSess
+ 
+                     // Decided once, above every line that reports it: the probe below must
+                     // describe the profile actually being asked for, not the one in Settings.
+-                    val announcedFps = announcedFrameRate(context, settings)
++                    val announcedFps = if (com.andrerinas.openheadunit.sdl.SdlSessionProfile.active) 30 else announcedFrameRate(context, settings)
+ 
+                     AppLog.i("[ServiceDiscovery] NegotiatedResolution is: ${geometry.width}x${geometry.height}")
+                     logNegotiatedCodecCapability(effectiveCodec, announcedFps, geometry.width, geometry.height)
+diff --git a/app/src/main/java/com/andrerinas/openheadunit/main/HomeFragment.kt b/app/src/main/java/com/andrerinas/openheadunit/main/HomeFragment.kt
+index 5591cb8..3abb7af 100644
+--- a/app/src/main/java/com/andrerinas/openheadunit/main/HomeFragment.kt
++++ b/app/src/main/java/com/andrerinas/openheadunit/main/HomeFragment.kt
+@@ -117,6 +117,7 @@ class HomeFragment : Fragment() {
+     private val mainViewModel: MainViewModel by activityViewModels()
+ 
+     private lateinit var selfModeTile: View
++    private var sdlBridgeTile: View? = null
+     private lateinit var usbTile: View
+     private lateinit var settingsTile: View
+     private lateinit var wifiTile: View
+@@ -218,6 +219,7 @@ class HomeFragment : Fragment() {
+         cachedPalette = null
+         LayoutInflater.from(container.context).inflate(R.layout.fragment_home, container, true)
+         selfModeTile = container.findViewById(R.id.self_mode_button)
++        sdlBridgeTile = container.findViewById(R.id.sdl_bridge_button)
+         usbTile = container.findViewById(R.id.usb_button)
+         settingsTile = container.findViewById(R.id.settings_button)
+         wifiTile = container.findViewById(R.id.wifi_button)
+@@ -1624,6 +1626,7 @@ class HomeFragment : Fragment() {
+     }
+ 
+     private fun startSelfModeInternal(needsDummyVpn: Boolean = false) {
++        com.andrerinas.openheadunit.sdl.SdlSessionProfile.active = false
+         val intent = Intent(requireContext(), AapService::class.java)
+         intent.action = AapService.ACTION_START_SELF_MODE
+         intent.putExtra(AapService.EXTRA_SELF_MODE_VPN, needsDummyVpn)
+@@ -1773,6 +1776,7 @@ class HomeFragment : Fragment() {
+         appsButton.setOnClickListener { openAppDrawer() }
+         exitButton.setOnClickListener { exitApp() }
+         selfModeTile.setOnClickListener { onSelfModeClicked() }
++        sdlBridgeTile?.setOnClickListener { onSdlBridgeClicked() }
+         usbTile.setOnClickListener { onUsbClicked() }
+         wifiTile.setOnClickListener { onWifiClicked() }
+         wifiTile.setOnLongClickListener {
+@@ -1790,6 +1794,10 @@ class HomeFragment : Fragment() {
+         }
+     }
+ 
++    private fun onSdlBridgeClicked() {
++        startActivity(Intent(requireContext(), com.andrerinas.openheadunit.sdl.SdlControlActivity::class.java))
++    }
++
+     private fun onPrimaryActionClicked() {
+         val decision = decision ?: return
+         when (decision.status) {
+diff --git a/app/src/main/java/com/andrerinas/openheadunit/sdl/Bmp24.java b/app/src/main/java/com/andrerinas/openheadunit/sdl/Bmp24.java
+new file mode 100644
+index 0000000..a700b8b
+--- /dev/null
++++ b/app/src/main/java/com/andrerinas/openheadunit/sdl/Bmp24.java
+@@ -0,0 +1,25 @@
++package com.andrerinas.openheadunit.sdl;
++
++import java.nio.ByteBuffer;
++import java.nio.ByteOrder;
++
++/** Uncompressed Windows BMP, 24-bit BGR, padded bottom-up rows. */
++final class Bmp24 {
++    static byte[] encode(int width,int height,int[] argb) {
++        if(width<1||height<1||width>1024||height>1024||argb.length!=width*height)
++            throw new IllegalArgumentException("Invalid BMP dimensions/pixels");
++        int stride=(width*3+3)&~3;
++        ByteBuffer out=ByteBuffer.allocate(54+stride*height).order(ByteOrder.LITTLE_ENDIAN);
++        out.put((byte)'B').put((byte)'M').putInt(out.capacity()).putInt(0).putInt(54);
++        out.putInt(40).putInt(width).putInt(height).putShort((short)1).putShort((short)24);
++        out.putInt(0).putInt(stride*height).putInt(2835).putInt(2835).putInt(0).putInt(0);
++        for(int y=height-1;y>=0;y--) {
++            for(int x=0;x<width;x++) {
++                int color=argb[y*width+x];
++                out.put((byte)color).put((byte)(color>>>8)).put((byte)(color>>>16));
++            }
++            for(int pad=width*3;pad<stride;pad++)out.put((byte)0);
++        }
++        return out.array();
++    }
++}
+diff --git a/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlAppIcon.java b/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlAppIcon.java
+new file mode 100644
+index 0000000..9f9d3e1
+--- /dev/null
++++ b/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlAppIcon.java
+@@ -0,0 +1,54 @@
++package com.andrerinas.openheadunit.sdl;
++import android.graphics.*;
++import java.io.ByteArrayOutputStream;
++import com.smartdevicelink.proxy.SdlProxyALM;
++import com.smartdevicelink.proxy.RPCResponse;
++import com.smartdevicelink.proxy.rpc.*;
++import com.smartdevicelink.proxy.rpc.enums.*;
++import com.andrerinas.openheadunit.utils.AppLog;
++final class SdlAppIcon {
++    static void uploadIcon(SdlProxyALM proxy, DisplayCapabilities display) {
++        if(proxy==null || display==null)return;
++        final SdlProxyALM p=proxy;
++        try {
++            int w=64,h=64;
++            FileType type=FileType.GRAPHIC_PNG;
++            if(display.getImageFields()!=null)for(ImageField f:display.getImageFields()) {
++                if(f.getName()!=ImageFieldName.appIcon)continue;
++                if(f.getImageResolution()!=null) {w=f.getImageResolution().getResolutionWidth(); h=f.getImageResolution().getResolutionHeight();}
++                if(f.getImageTypeSupported()!=null && !f.getImageTypeSupported().contains(type)) {
++                    if(f.getImageTypeSupported().contains(FileType.GRAPHIC_JPEG)) type=FileType.GRAPHIC_JPEG;
++                    else if(f.getImageTypeSupported().contains(FileType.GRAPHIC_BMP)) type=FileType.GRAPHIC_BMP;
++                    else {log("ICON: central não anunciou PNG/JPEG/BMP para appIcon");return;}
++                }
++            }
++            if(w<1||h<1||w>1024||h>1024){log("ICON: dimensões inválidas "+w+"x"+h);return;}
++            Bitmap bitmap=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888);
++            Canvas canvas=new Canvas(bitmap);canvas.drawColor(Color.rgb(0,125,115));
++            Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);paint.setColor(Color.WHITE);paint.setTextSize(Math.min(w,h)*0.38f);paint.setTextAlign(Paint.Align.CENTER);
++            canvas.drawText("AA",w/2f,h*0.64f,paint);
++            ByteArrayOutputStream bytes=new ByteArrayOutputStream();
++            if(type==FileType.GRAPHIC_BMP) {
++                int[] pixels=new int[w*h];bitmap.getPixels(pixels,0,w,0,0,w,h);
++                bytes.write(Bmp24.encode(w,h,pixels));
++            } else bitmap.compress(type==FileType.GRAPHIC_PNG?Bitmap.CompressFormat.PNG:Bitmap.CompressFormat.JPEG,95,bytes);
++            bitmap.recycle();
++            final String filename=type==FileType.GRAPHIC_BMP?"aa-sdl-bridge-icon.bmp":type==FileType.GRAPHIC_PNG?"aa-sdl-bridge-icon.png":"aa-sdl-bridge-icon.jpg";
++            PutFile file=new PutFile();file.setSdlFileName(filename);file.setFileType(type);file.setFileData(bytes.toByteArray());
++            file.setOnRPCResponseListener(new com.smartdevicelink.proxy.rpc.listeners.OnPutFileUpdateListener(){
++                public void onResponse(int id,RPCResponse response,long total){
++                    log("ICON PutFile="+response.toString());
++                    if(!Boolean.TRUE.equals(response.getSuccess()))return;
++                    SetAppIcon icon=new SetAppIcon();icon.setSdlFileName(filename);
++                    icon.setOnRPCResponseListener(new com.smartdevicelink.proxy.rpc.listeners.OnRPCResponseListener(){
++                        public void onResponse(int correlation,RPCResponse answer){log("ICON SetAppIcon="+answer.toString());}
++                    });
++                    try{p.sendRPCRequest(icon);}catch(Exception e){log("ICON SetAppIcon ERROR "+e);}
++                }
++            });
++            log("ICON upload "+w+"x"+h+" type="+type); p.sendRPCRequest(file);
++        }catch(Exception e){log("ICON ERROR "+e);}
++    }
++private static void log(String s){ AppLog.INSTANCE.i("SDL bridge: "+s); }
++}
++
+diff --git a/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlBridgeController.kt b/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlBridgeController.kt
+new file mode 100644
+index 0000000..6ce1432
+--- /dev/null
++++ b/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlBridgeController.kt
+@@ -0,0 +1,376 @@
++package com.andrerinas.openheadunit.sdl
++
++import android.app.Activity
++import android.app.PendingIntent
++import android.content.BroadcastReceiver
++import android.content.Context
++import android.content.Intent
++import android.content.IntentFilter
++import android.hardware.usb.UsbAccessory
++import android.hardware.usb.UsbManager
++import android.os.Build
++import android.os.Handler
++import android.os.Looper
++import android.os.SystemClock
++import android.view.Surface
++import androidx.core.content.ContextCompat
++import com.andrerinas.openheadunit.App
++import com.andrerinas.openheadunit.aap.protocol.messages.TouchEvent as AapTouchEvent
++import com.andrerinas.openheadunit.aap.protocol.proto.Input
++import com.andrerinas.openheadunit.connection.CommManager
++import com.andrerinas.openheadunit.utils.AppLog
++import com.smartdevicelink.proxy.SdlProxyALM
++import com.smartdevicelink.proxy.SdlProxyBuilder
++import com.smartdevicelink.proxy.interfaces.IProxyListenerALM
++import com.smartdevicelink.proxy.interfaces.OnSystemCapabilityListener
++import com.smartdevicelink.proxy.rpc.DisplayCapabilities
++import com.smartdevicelink.proxy.rpc.RegisterAppInterfaceResponse
++import com.smartdevicelink.proxy.rpc.OnHMIStatus
++import com.smartdevicelink.proxy.rpc.OnDriverDistraction
++import com.smartdevicelink.proxy.rpc.OnTouchEvent
++import com.smartdevicelink.proxy.rpc.enums.AppHMIType
++import com.smartdevicelink.proxy.rpc.enums.HMILevel
++import com.smartdevicelink.proxy.rpc.enums.DriverDistractionState
++import com.smartdevicelink.proxy.rpc.enums.Language
++import com.smartdevicelink.proxy.rpc.enums.SystemCapabilityType
++import com.smartdevicelink.proxy.rpc.enums.TouchType
++import com.smartdevicelink.transport.USBTransport
++import com.smartdevicelink.transport.USBTransportConfig
++import java.lang.reflect.Proxy
++import java.lang.ref.WeakReference
++import java.util.Vector
++import java.util.concurrent.atomic.AtomicBoolean
++import java.util.concurrent.Executors
++
++/** Process-scoped SDL client. It is deliberately independent of either Activity's lifecycle. */
++class SdlBridgeController(context: Context) {
++    companion object {
++        // These are the exact identity values that made SDL Probe visible on the tested PLAY+.
++        // The original TomTom app must be closed while this experimental identity is connected.
++        private const val SDL_APP_ID = "3610601450"
++        private const val SDL_APP_NAME = "TomTom"
++        private const val USB_PERMISSION_SUFFIX = ".SDL_USB_PERMISSION"
++    }
++
++    private val appContext = context.applicationContext
++    private val actionUsbPermission = "${appContext.packageName}$USB_PERMISSION_SUFFIX"
++    private val usbManager = appContext.getSystemService(Context.USB_SERVICE) as UsbManager
++    private val lock = Any()
++    @Volatile private var proxyEpoch = 0
++    private val videoBusy = AtomicBoolean(false)
++    private val mainHandler = Handler(Looper.getMainLooper())
++    private val videoWorker = Executors.newSingleThreadExecutor { runnable -> Thread(runnable, "SDL bridge video setup") }
++    private val pendingSurfaceCallbacks = mutableListOf<(Surface?) -> Unit>()
++    @Volatile private var proxy: SdlProxyALM? = null
++    @Volatile private var full = false
++    @Volatile private var distracted = false
++    @Volatile private var armed = false
++    @Volatile private var videoFailed = false
++    @Volatile private var display: DisplayCapabilities? = null
++    @Volatile private var requestingActivity: WeakReference<Activity>? = null
++    private var output: SdlDecoderOutput? = null
++    private var iconRequested = false
++    @Volatile var onVideoReadyChanged: (() -> Unit)? = null
++
++    private val receiver = object : BroadcastReceiver() {
++        override fun onReceive(context: Context, intent: Intent) {
++            if (intent.action == UsbManager.ACTION_USB_ACCESSORY_DETACHED) {
++                AppLog.w("SDL bridge: USB accessory detached")
++                disconnect()
++                return
++            }
++            if (intent.action != actionUsbPermission) return
++
++            val granted = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
++            val hasAccessoryExtra = intent.hasExtra(UsbManager.EXTRA_ACCESSORY)
++            AppLog.i("SDL bridge: USB permission result granted=$granted accessoryExtra=$hasAccessoryExtra")
++            if (!granted) {
++                AppLog.w("SDL bridge: USB accessory permission was denied")
++                return
++            }
++
++            // Some USB stacks omit EXTRA_ACCESSORY in the permission result. Mirror SDL Probe's
++            // known-good flow: enumerate the accessory again and verify permission before opening.
++            val accessory = usbManager.accessoryList?.firstOrNull()
++            if (accessory == null) {
++                AppLog.w("SDL bridge: permission granted but no AOA accessory is currently listed")
++                return
++            }
++            if (!usbManager.hasPermission(accessory)) {
++                AppLog.w("SDL bridge: permission result received but UsbManager.hasPermission is false")
++                return
++            }
++            val activity = requestingActivity?.get()?.takeUnless {
++                it.isFinishing || (Build.VERSION.SDK_INT >= 17 && it.isDestroyed)
++            }
++            openProxy(accessory, activity ?: appContext)
++        }
++    }
++
++    init {
++        ContextCompat.registerReceiver(
++            appContext,
++            receiver,
++            IntentFilter().apply {
++                addAction(actionUsbPermission)
++                addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED)
++            },
++            ContextCompat.RECEIVER_NOT_EXPORTED
++        )
++    }
++
++    val isConnected: Boolean get() = proxy != null
++    val panelWidth: Int get() = display?.screenParams?.imageResolution?.resolutionWidth ?: 800
++    val panelHeight: Int get() = display?.screenParams?.imageResolution?.resolutionHeight ?: 480
++    val statusSummary: String get() = if (isVideoReady) "Central pronta: ${panelWidth}×${panelHeight}" else if (isConnected) "SDL conectado; aguardando seleção de TomTom na central" else "SDL desconectado"
++    val isVideoReady: Boolean get() = armed && full && !distracted && !videoFailed && display != null && proxy != null
++
++    /** Starts the tested AOA/SDL registration flow. Called from the user's parked-only confirmation. */
++    fun connect(activity: Activity) {
++        requestingActivity = WeakReference(activity)
++        if (proxy != null) {
++            AppLog.i("SDL bridge: already connected")
++            return
++        }
++        val accessories = usbManager.accessoryList?.toList().orEmpty()
++        AppLog.i("SDL bridge: USB check package=${appContext.packageName} accessories=${accessories.size}")
++        val accessory = accessories.firstOrNull()
++        if (accessory == null) {
++            AppLog.w("SDL bridge: no USB accessory detected; connect the phone to PLAY+ first")
++            return
++        }
++        AppLog.i(
++            "SDL bridge: USB accessory manufacturer=${accessory.manufacturer} " +
++                "model=${accessory.model} version=${accessory.version} permission=${usbManager.hasPermission(accessory)}"
++        )
++        if (!USBTransport.isAccessorySupported(accessory)) {
++            AppLog.w("SDL bridge: SDL SDK rejected the USB accessory descriptors")
++            return
++        }
++        if (usbManager.hasPermission(accessory)) {
++            openProxy(accessory, activity)
++            return
++        }
++        val flags = if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0
++        val permissionIntent = Intent(actionUsbPermission).setPackage(appContext.packageName)
++        try {
++            usbManager.requestPermission(
++                accessory,
++                PendingIntent.getBroadcast(appContext, 391, permissionIntent, flags)
++            )
++            AppLog.i("SDL bridge: requested Android USB accessory permission action=$actionUsbPermission")
++        } catch (error: Exception) {
++            AppLog.e("SDL bridge: USB permission request failed", error)
++        }
++    }
++
++    private fun openProxy(accessory: UsbAccessory, proxyContext: Context) {
++        synchronized(lock) {
++            if (proxy != null) return
++            try {
++                val activeEpoch = ++proxyEpoch
++                val listener = Proxy.newProxyInstance(
++                    IProxyListenerALM::class.java.classLoader,
++                    arrayOf(IProxyListenerALM::class.java)
++                ) { self, method, args ->
++                    if (method.declaringClass == Any::class.java) {
++                        when (method.name) {
++                            "hashCode" -> System.identityHashCode(self)
++                            "equals" -> self === args?.get(0)
++                            else -> "SdlBridgeListener"
++                        }
++                    } else if (activeEpoch != proxyEpoch) {
++                        null
++                    } else {
++                        val event = args?.firstOrNull()
++                        if (method.name != "onOnTouchEvent") {
++                            AppLog.i("SDL bridge: callback ${method.name} args=${args?.contentToString()}")
++                        }
++                        when (event) {
++                            is RegisterAppInterfaceResponse -> {
++                                AppLog.i(
++                                    "SDL bridge: RAI success=${event.getSuccess()} " +
++                                        "resultCode=${event.getResultCode()} info=${event.getInfo()}"
++                                )
++                            }
++                            is OnHMIStatus -> {
++                                val wasFull = full
++                                full = event.hmiLevel == HMILevel.HMI_FULL
++                                if (full && !wasFull) videoFailed = false
++                                AppLog.i("SDL bridge: HMI=${event.hmiLevel} full=$full")
++                                requestDisplay()
++                                notifyVideoReadyChanged()
++                            }
++                            is OnDriverDistraction -> {
++                                distracted = event.state == DriverDistractionState.DD_ON
++                                AppLog.i("SDL bridge: driver distraction=${event.state}")
++                                notifyVideoReadyChanged()
++                            }
++                            is OnTouchEvent -> routeTouch(event)
++                        }
++                        if (method.name == "onProxyClosed") {
++                            disconnect()
++                            notifyVideoReadyChanged()
++                            AppLog.w("SDL bridge: SDL proxy closed")
++                        }
++                        null
++                    }
++                } as IProxyListenerALM
++
++                val types = Vector<AppHMIType>().apply { add(AppHMIType.NAVIGATION) }
++                val sdkContext = SdlReceiverContext(proxyContext)
++                proxy = SdlProxyBuilder.Builder(listener, SDL_APP_ID, SDL_APP_NAME, false, sdkContext)
++                    .setLangDesired(Language.PT_BR)
++                    .setHMILangDesired(Language.PT_BR)
++                    .setVrAppHMITypes(types)
++                    .setTransportType(USBTransportConfig(sdkContext, accessory))
++                    .setCallbackToUIThread(true)
++                    .build()
++                AppLog.i("SDL bridge: SDL registration started as $SDL_APP_NAME / $SDL_APP_ID")
++            } catch (error: Exception) {
++                proxy = null
++                AppLog.e("SDL bridge: registration failed", error)
++            }
++        }
++    }
++
++    private fun requestDisplay() {
++        val current = proxy ?: return
++        current.getCapability(SystemCapabilityType.DISPLAY, object : OnSystemCapabilityListener {
++            override fun onCapabilityRetrieved(capability: Any?) {
++                display = capability as? DisplayCapabilities
++                if (!iconRequested && display != null) {
++                    iconRequested = true
++                    // Preserve the validated TomTom presentation for this build.
++                }
++                val resolution = display?.screenParams?.imageResolution
++                AppLog.i("SDL bridge: display=${resolution?.resolutionWidth}x${resolution?.resolutionHeight}")
++                notifyVideoReadyChanged()
++            }
++            override fun onError(error: String?) { AppLog.w("SDL bridge: display capability failed: $error") }
++        })
++    }
++
++    /** Creates the encoder off the UI thread, then returns its Surface on the main thread. */
++    fun requestVideoSurface(callback: (Surface?) -> Unit) {
++        if (!isVideoReady) {
++            mainHandler.post { callback(null) }
++            return
++        }
++        synchronized(lock) {
++            output?.getSurface()?.let { existing ->
++                mainHandler.post { callback(existing) }
++                return
++            }
++            pendingSurfaceCallbacks.add(callback)
++            if (!videoBusy.compareAndSet(false, true)) return
++        }
++        videoWorker.execute {
++            var sink: SdlDecoderOutput? = null
++            var surface: Surface? = null
++            try {
++                val caps = display
++                val resolution = caps?.screenParams?.imageResolution
++                val width = resolution?.resolutionWidth ?: 0
++                val height = resolution?.resolutionHeight ?: 0
++                val current = proxy
++                if (isVideoReady && current != null) {
++                    sink = SdlDecoderOutput(current) { message, error ->
++                        AppLog.e("SDL bridge: $message", error)
++                        videoFailed = true
++                        notifyVideoReadyChanged()
++                    }
++                    surface = sink.open(width, height)
++                    AppLog.i("SDL bridge: NAV H.264 surface ready ${width}x$height 30fps")
++                }
++            } catch (error: Exception) {
++                AppLog.e("SDL bridge: could not open NAV video output", error)
++            }
++            val keep = synchronized(lock) {
++                if (surface != null && isVideoReady && output == null) {
++                    output = sink
++                    true
++                } else {
++                    if (surface == null) videoFailed = true
++                    false
++                }
++            }
++            val callbacks = synchronized(lock) {
++                pendingSurfaceCallbacks.toList().also { pendingSurfaceCallbacks.clear() }
++            }
++            if (!keep) {
++                sink?.close()
++                videoBusy.set(false)
++                surface = null
++            }
++            val result = if (keep) surface else null
++            mainHandler.post { callbacks.forEach { it(result) } }
++        }
++    }
++
++    /** Must be called after VideoDecoder stopped using the returned Surface. */
++    fun closeVideoOutput() {
++        val previous = synchronized(lock) { output.also { output = null } }
++        if (previous != null) {
++            val target = previous.getSurface()
++            val decoder = App.provide(appContext).videoDecoder
++            if (target != null && decoder.isCurrentSurface(target)) decoder.setSurface(null)
++            Thread({
++                previous.close()
++                videoBusy.set(false)
++                AppLog.i("SDL bridge: NAV video output closed")
++                val retry = synchronized(lock) {
++                    pendingSurfaceCallbacks.isNotEmpty() && isVideoReady
++                }
++                if (retry) requestVideoSurface { }
++            }, "SDL bridge video close").start()
++        }
++    }
++
++    fun setArmed(value: Boolean) {
++        armed = value
++        if (value) videoFailed = false
++        if (!value) closeVideoOutput()
++        AppLog.i("SDL bridge: parked confirmation armed=$value")
++        notifyVideoReadyChanged()
++    }
++
++    fun disconnect() {
++        armed = false; full = false; distracted = false; display = null; iconRequested = false
++        synchronized(lock) { pendingSurfaceCallbacks.clear() }
++        closeVideoOutput()
++        val old = synchronized(lock) { proxyEpoch++; proxy.also { proxy = null } }
++        requestingActivity = null
++        if (old != null) Thread({ try { old.dispose() } catch (error: Exception) {
++            AppLog.w("SDL bridge: dispose failed", error)
++        } }, "SDL bridge disconnect").start()
++        notifyVideoReadyChanged()
++    }
++
++    private fun routeTouch(event: OnTouchEvent) {
++        if (!isVideoReady) return
++        val sdlEvent = event.event?.lastOrNull() ?: return
++        val coordinate = sdlEvent.touchCoordinates?.lastOrNull() ?: return
++        val caps = display ?: return
++        val resolution = caps.screenParams?.imageResolution ?: return
++        val width = resolution.resolutionWidth.takeIf { it > 0 } ?: return
++        val height = resolution.resolutionHeight.takeIf { it > 0 } ?: return
++        val targetWidth = com.andrerinas.openheadunit.utils.HeadUnitScreenConfig.getNegotiatedWidth().takeIf { it > 0 } ?: width
++        val targetHeight = com.andrerinas.openheadunit.utils.HeadUnitScreenConfig.getNegotiatedHeight().takeIf { it > 0 } ?: height
++        val x = ((coordinate.x ?: 0).toLong() * targetWidth / width).toInt().coerceIn(0, targetWidth - 1)
++        val y = ((coordinate.y ?: 0).toLong() * targetHeight / height).toInt().coerceIn(0, targetHeight - 1)
++        val action = when (event.type) {
++            TouchType.BEGIN -> Input.TouchEvent.PointerAction.TOUCH_ACTION_DOWN
++            TouchType.MOVE -> Input.TouchEvent.PointerAction.TOUCH_ACTION_MOVE
++            TouchType.END, TouchType.CANCEL -> Input.TouchEvent.PointerAction.TOUCH_ACTION_UP
++            else -> return
++        }
++        val manager = App.provide(appContext).commManager
++        if (manager.connectionState.value !is CommManager.ConnectionState.TransportStarted) return
++        manager.send(AapTouchEvent(SystemClock.elapsedRealtime(), action, 0, listOf(Triple(0, x, y))))
++    }
++
++    private fun notifyVideoReadyChanged() {
++        mainHandler.post { onVideoReadyChanged?.invoke() }
++    }
++}
+diff --git a/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlControlActivity.kt b/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlControlActivity.kt
+new file mode 100644
+index 0000000..df74e40
+--- /dev/null
++++ b/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlControlActivity.kt
+@@ -0,0 +1,153 @@
++package com.andrerinas.openheadunit.sdl
++
++
++
++import android.app.Activity
++
++import android.os.Bundle
++
++import android.os.Handler
++
++import android.os.Looper
++
++import android.content.Intent
++
++import android.graphics.Color
++
++import android.view.View
++
++import android.widget.*
++
++import androidx.core.content.ContextCompat
++
++import com.andrerinas.openheadunit.App
++
++import com.andrerinas.openheadunit.aap.AapService
++
++
++
++class SdlControlActivity : Activity() {
++
++    private val handler = Handler(Looper.getMainLooper())
++
++    private var startingAt = 0L
++
++    private lateinit var parked: CheckBox
++
++    private lateinit var status: TextView
++
++    private lateinit var start: Button
++
++    private lateinit var dpi: SeekBar
++
++    private lateinit var densityLabel: TextView
++
++    private val app get() = App.provide(this)
++
++    private val prefs get() = getSharedPreferences("sdl_projection", MODE_PRIVATE)
++
++    private val tick = object : Runnable {
++
++        override fun run() {
++
++            val bridge = app.sdlBridge
++
++            val connected = app.commManager.isConnected
++            val streaming = connected && SdlSessionProfile.active
++
++            if(streaming || android.os.SystemClock.elapsedRealtime()-startingAt>20000) startingAt=0L
++
++            status.text = bridge.statusSummary + if (streaming) "\nTransmitindo Android Auto para a central" else if(connected) "\nPare o Self Mode comum antes de iniciar o modo SDL." else if(startingAt!=0L) "\nIniciando Android Auto…" else "\nSelecione TomTom na central e inicie o vídeo.\nO Headunit Server do Android Auto precisa estar ligado."
++
++            start.isEnabled = parked.isChecked && bridge.isVideoReady && !connected && startingAt==0L
++
++            dpi.isEnabled = !connected && startingAt==0L
++
++            handler.postDelayed(this, 500)
++
++        }
++
++    }
++
++    override fun onCreate(state: Bundle?) {
++
++        setTheme(android.R.style.Theme_DeviceDefault_NoActionBar)
++        super.onCreate(state)
++
++        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(32,48,32,32); setBackgroundColor(Color.rgb(18,30,38)) }
++
++        fun label(text: String) = TextView(this).apply { this.text=text; textSize=18f;setTextColor(Color.WHITE);box.addView(this) }
++
++        label("Projeção SDL • Toyota PLAY+").textSize=24f
++
++        status=label("")
++
++        parked=CheckBox(this).apply {text="Veículo estacionado e freio acionado";setTextColor(Color.WHITE);box.addView(this)}
++
++        densityLabel=label("")
++
++        dpi=SeekBar(this).apply { max=160;progress=(prefs.getInt("dpi",160)-100).coerceIn(0,160);box.addView(this) }
++
++        fun updateDensity(){densityLabel.text="DPI da central: ${dpi.progress+100} • aplicar no próximo início"}
++
++        updateDensity()
++
++        dpi.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
++
++            override fun onProgressChanged(bar:SeekBar?,value:Int,user:Boolean){updateDensity()}
++
++            override fun onStartTrackingTouch(bar:SeekBar?){}
++
++            override fun onStopTrackingTouch(bar:SeekBar?){prefs.edit().putInt("dpi",dpi.progress+100).apply()}
++
++        })
++
++        fun button(text:String, action:()->Unit)=Button(this).apply{this.text=text;box.addView(this);setOnClickListener{action()}}
++
++        button("Conectar à central") {app.sdlBridge.setArmed(true);app.sdlBridge.connect(this)}
++
++        start=button("Iniciar vídeo") {
++
++            if(!parked.isChecked || !app.sdlBridge.isVideoReady || app.commManager.isConnected || startingAt!=0L)return@button
++
++            startingAt=android.os.SystemClock.elapsedRealtime()
++
++            SdlSessionProfile.panelWidth=app.sdlBridge.panelWidth
++
++            SdlSessionProfile.panelHeight=app.sdlBridge.panelHeight
++
++            SdlSessionProfile.dpi=dpi.progress+100
++
++            SdlSessionProfile.active=true
++
++            prefs.edit().putInt("dpi",SdlSessionProfile.dpi).apply()
++
++            ContextCompat.startForegroundService(this,Intent(this,AapService::class.java).setAction(AapService.ACTION_START_SELF_MODE))
++
++        }
++
++        button("Parar vídeo") { ContextCompat.startForegroundService(this,Intent(this,AapService::class.java).setAction(AapService.ACTION_STOP_SELF_MODE)) }
++
++        button("Desconectar SDL") {
++
++            if(app.commManager.isConnected)Toast.makeText(this,"Pare o vídeo antes de desconectar SDL",Toast.LENGTH_LONG).show()
++
++            else {SdlSessionProfile.active=false;app.sdlBridge.disconnect()}
++
++        }
++
++        val scroll = ScrollView(this).apply { addView(box);setBackgroundColor(Color.rgb(18,30,38)) }
++        if(android.os.Build.VERSION.SDK_INT>=21) scroll.setOnApplyWindowInsetsListener { _, insets ->
++            box.setPadding(32+insets.systemWindowInsetLeft,48+insets.systemWindowInsetTop,32+insets.systemWindowInsetRight,32+insets.systemWindowInsetBottom)
++            insets
++        }
++        setContentView(scroll)
++
++    }
++
++    override fun onResume(){super.onResume();handler.post(tick)}
++
++    override fun onPause(){handler.removeCallbacks(tick);super.onPause()}
++
++}
++
+diff --git a/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlDecoderOutput.java b/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlDecoderOutput.java
+new file mode 100644
+index 0000000..a6caf72
+--- /dev/null
++++ b/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlDecoderOutput.java
+@@ -0,0 +1,118 @@
++package com.andrerinas.openheadunit.sdl;
++
++import android.os.Handler;
++import android.os.HandlerThread;
++import android.os.Looper;
++import android.os.Process;
++import android.view.Surface;
++import com.smartdevicelink.proxy.SdlProxyALM;
++import java.util.concurrent.CountDownLatch;
++import java.util.concurrent.TimeUnit;
++import java.util.concurrent.atomic.AtomicBoolean;
++import java.util.concurrent.atomic.AtomicReference;
++
++/** H.264 SDL NAV sink exposed as a decoder output Surface. */
++final class SdlDecoderOutput implements AutoCloseable {
++    interface Listener { void onFailure(String message, Throwable cause); }
++
++    private final SdlProxyALM proxy;
++    private final Listener listener;
++    private final HandlerThread encoderThread = new HandlerThread("SDL AA encoder", Process.THREAD_PRIORITY_DISPLAY);
++    private final AtomicBoolean started = new AtomicBoolean();
++    private volatile boolean closed;
++    private Handler drain;
++    private Surface inputSurface;
++    private SdlFrameRelay relay;
++
++    SdlDecoderOutput(SdlProxyALM proxy, Listener listener) {
++        if (proxy == null) throw new IllegalArgumentException("SDL proxy is required");
++        this.proxy = proxy;
++        this.listener = listener;
++    }
++
++    /** Call after SDL registration and HMI FULL. The caller must stop the decoder before close(). */
++    synchronized Surface open(int width, int height) {
++        if (closed) throw new IllegalStateException("SDL video output is closed");
++        if (inputSurface != null) throw new IllegalStateException("SDL video output is already open");
++        if (width < 16 || height < 16 || width > 4096 || height > 4096)
++            throw new IllegalArgumentException("Invalid SDL video resolution " + width + "x" + height);
++
++        encoderThread.start();
++        drain = new Handler(encoderThread.getLooper());
++        CountDownLatch ready = new CountDownLatch(1);
++        AtomicReference<Surface> result = new AtomicReference<>();
++        AtomicReference<RuntimeException> failure = new AtomicReference<>();
++        drain.post(() -> {
++            try {
++                inputSurface = proxy.createOpenGLInputSurface(30, 1, width, height, 1_500_000, false);
++                if (inputSurface == null) throw new IllegalStateException("PLAY+ did not start the SDL NAV video service");
++                proxy.startEncoder();
++                started.set(true);
++                relay = new SdlFrameRelay(inputSurface, width, height, drain, () -> proxy.drainEncoder(false));
++                result.set(relay.surface());
++                drain.post(drainFrames);
++            } catch (RuntimeException error) {
++                failure.set(error);
++                if (relay != null) relay.close();
++                try { proxy.releaseEncoder(); proxy.endVideoStream(); } catch (Exception ignored) { }
++            } finally {
++                ready.countDown();
++            }
++        });
++        try {
++            if (!ready.await(12, TimeUnit.SECONDS)) throw new IllegalStateException("Timed out opening SDL video output");
++        } catch (InterruptedException error) {
++            Thread.currentThread().interrupt();
++            throw new IllegalStateException("Interrupted opening SDL video output", error);
++        }
++        if (failure.get() != null) throw failure.get();
++        inputSurface = result.get();
++        if (inputSurface == null) throw new IllegalStateException("SDL video output returned no Surface");
++        return inputSurface;
++    }
++
++    private final Runnable drainFrames = new Runnable() {
++        @Override public void run() {
++            if (!started.get()) return;
++            try {
++                proxy.drainEncoder(false);
++                Handler handler = drain;
++                if (started.get() && handler != null) handler.postDelayed(this, 5);
++            } catch (RuntimeException error) {
++                started.set(false);
++                if (listener != null) listener.onFailure("SDL H.264 drain failed", error);
++            }
++        }
++    };
++
++    synchronized Surface getSurface() { return inputSurface; }
++
++    /** Only after the Android Auto decoder has stopped rendering to this Surface. */
++    @Override public synchronized void close() {
++        if (closed) return;
++        closed = true;
++        started.set(false);
++        Handler handler = drain;
++        if (handler != null) handler.removeCallbacksAndMessages(null);
++        if (encoderThread.isAlive() && handler != null && Looper.myLooper() != encoderThread.getLooper()) {
++            CountDownLatch stopped = new CountDownLatch(1);
++            handler.post(() -> {
++                if (relay != null) { relay.close(); relay = null; }
++                // Do not wait indefinitely for EOS on a failed transport.
++                try { proxy.releaseEncoder(); } catch (Exception ignored) { }
++                try { proxy.endVideoStream(); } catch (Exception ignored) { }
++                stopped.countDown();
++            });
++            try { stopped.await(1500, TimeUnit.MILLISECONDS); }
++            catch (InterruptedException error) { Thread.currentThread().interrupt(); }
++            encoderThread.quitSafely();
++            try { encoderThread.join(1500); }
++            catch (InterruptedException error) { Thread.currentThread().interrupt(); }
++        } else {
++            try { proxy.releaseEncoder(); } catch (Exception ignored) { }
++            try { proxy.endVideoStream(); } catch (Exception ignored) { }
++        }
++        // SdlProxyALM owns the input Surface together with its encoder; releaseEncoder tears both down.
++        inputSurface = null;
++    }
++}
+diff --git a/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlFrameRelay.java b/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlFrameRelay.java
+new file mode 100644
+index 0000000..b1b26a2
+--- /dev/null
++++ b/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlFrameRelay.java
+@@ -0,0 +1,45 @@
++package com.andrerinas.openheadunit.sdl;
++import android.graphics.SurfaceTexture;
++import android.opengl.*;
++import android.os.Handler;
++import android.view.Surface;
++import java.nio.*;
++import com.andrerinas.openheadunit.utils.AppLog;
++
++/** Owns the decoder consumer and explicitly scales its external texture into the SDL encoder. */
++final class SdlFrameRelay implements AutoCloseable {
++ private EGLDisplay display; private EGLContext context; private EGLSurface window;
++ private SurfaceTexture texture; private Surface decoderSurface;
++ private int program, textureId; private final int width,height; private long frames;
++ private final float[] matrix=new float[16];
++ private final FloatBuffer vertices=ByteBuffer.allocateDirect(16*4).order(ByteOrder.nativeOrder()).asFloatBuffer();
++ SdlFrameRelay(Surface encoder,int w,int h,Handler handler,Runnable drain) {
++  width=w;height=h;
++  display=EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
++  if(!EGL14.eglInitialize(display,new int[2],0,new int[2],1))throw new IllegalStateException("EGL initialize");
++  EGLConfig[] cfg=new EGLConfig[1];int[] n=new int[1];
++  int[] attr={EGL14.EGL_RED_SIZE,8,EGL14.EGL_GREEN_SIZE,8,EGL14.EGL_BLUE_SIZE,8,EGL14.EGL_RENDERABLE_TYPE,4,0x3142,1,EGL14.EGL_NONE};
++  if(!EGL14.eglChooseConfig(display,attr,0,cfg,0,1,n,0)||n[0]==0)throw new IllegalStateException("EGL config");
++  context=EGL14.eglCreateContext(display,cfg[0],EGL14.EGL_NO_CONTEXT,new int[]{EGL14.EGL_CONTEXT_CLIENT_VERSION,2,EGL14.EGL_NONE},0);
++  window=EGL14.eglCreateWindowSurface(display,cfg[0],encoder,new int[]{EGL14.EGL_NONE},0);
++  if(!EGL14.eglMakeCurrent(display,window,window,context))throw new IllegalStateException("EGL makeCurrent");
++  String vs="attribute vec2 p; attribute vec2 uv; uniform mat4 tm; varying vec2 v; void main(){gl_Position=vec4(p,0.,1.); v=(tm*vec4(uv,0.,1.)).xy;}";
++  String fs="#extension GL_OES_EGL_image_external : require\nprecision mediump float; uniform samplerExternalOES image; varying vec2 v; void main(){gl_FragColor=texture2D(image,v);}";
++  program=GLES20.glCreateProgram();GLES20.glAttachShader(program,shader(GLES20.GL_VERTEX_SHADER,vs));GLES20.glAttachShader(program,shader(GLES20.GL_FRAGMENT_SHADER,fs));GLES20.glLinkProgram(program);
++  int[] ok=new int[1];GLES20.glGetProgramiv(program,GLES20.GL_LINK_STATUS,ok,0);if(ok[0]==0)throw new IllegalStateException(GLES20.glGetProgramInfoLog(program));
++  vertices.put(new float[]{-1,-1,0,0,1,-1,1,0,-1,1,0,1,1,1,1,1}).position(0);
++  int[] ids=new int[1];GLES20.glGenTextures(1,ids,0);textureId=ids[0];GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,textureId);
++  GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,GLES20.GL_TEXTURE_MIN_FILTER,GLES20.GL_LINEAR);GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,GLES20.GL_TEXTURE_MAG_FILTER,GLES20.GL_LINEAR);
++  GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,GLES20.GL_TEXTURE_WRAP_S,GLES20.GL_CLAMP_TO_EDGE);GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,GLES20.GL_TEXTURE_WRAP_T,GLES20.GL_CLAMP_TO_EDGE);
++  texture=new SurfaceTexture(textureId);texture.setDefaultBufferSize(w,h);decoderSurface=new Surface(texture);
++  texture.setOnFrameAvailableListener(t->{try{draw();drain.run();}catch(RuntimeException e){AppLog.INSTANCE.e("SDL relay frame failed",e);}},handler);
++  // Emit a visible frame before AA begins, distinguishing SDL delivery from AA decode.
++  GLES20.glViewport(0,0,w,h);GLES20.glClearColor(0,0.5f,0.5f,1);GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);swap(System.nanoTime());
++ }
++ private static int shader(int type,String source){int s=GLES20.glCreateShader(type);GLES20.glShaderSource(s,source);GLES20.glCompileShader(s);int[] ok=new int[1];GLES20.glGetShaderiv(s,GLES20.GL_COMPILE_STATUS,ok,0);if(ok[0]==0)throw new IllegalStateException(GLES20.glGetShaderInfoLog(s));return s;}
++ Surface surface(){return decoderSurface;}
++ void setInputSize(int w,int h){texture.setDefaultBufferSize(w,h);}
++ private void draw(){texture.updateTexImage();texture.getTransformMatrix(matrix);GLES20.glViewport(0,0,width,height);GLES20.glUseProgram(program);int p=GLES20.glGetAttribLocation(program,"p"),uv=GLES20.glGetAttribLocation(program,"uv");vertices.position(0);GLES20.glVertexAttribPointer(p,2,GLES20.GL_FLOAT,false,16,vertices);vertices.position(2);GLES20.glVertexAttribPointer(uv,2,GLES20.GL_FLOAT,false,16,vertices);GLES20.glEnableVertexAttribArray(p);GLES20.glEnableVertexAttribArray(uv);GLES20.glUniformMatrix4fv(GLES20.glGetUniformLocation(program,"tm"),1,false,matrix,0);GLES20.glActiveTexture(GLES20.GL_TEXTURE0);GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,textureId);GLES20.glUniform1i(GLES20.glGetUniformLocation(program,"image"),0);GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,0,4);swap(System.nanoTime());if(++frames==1||frames%150==0)AppLog.INSTANCE.i("SDL relay: scaled frames="+frames+" output="+width+"x"+height);}
++ private void swap(long timestamp){EGLExt.eglPresentationTimeANDROID(display,window,timestamp);if(!EGL14.eglSwapBuffers(display,window))throw new IllegalStateException("EGL swap failed");}
++ public void close(){if(texture!=null)texture.setOnFrameAvailableListener(null);if(decoderSurface!=null)decoderSurface.release();if(texture!=null)texture.release();if(display!=null){GLES20.glDeleteProgram(program);GLES20.glDeleteTextures(1,new int[]{textureId},0);EGL14.eglMakeCurrent(display,EGL14.EGL_NO_SURFACE,EGL14.EGL_NO_SURFACE,EGL14.EGL_NO_CONTEXT);EGL14.eglDestroySurface(display,window);EGL14.eglDestroyContext(display,context);EGL14.eglTerminate(display);}}
++}
+diff --git a/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlReceiverContext.kt b/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlReceiverContext.kt
+new file mode 100644
+index 0000000..df4033d
+--- /dev/null
++++ b/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlReceiverContext.kt
+@@ -0,0 +1,33 @@
++package com.andrerinas.openheadunit.sdl
++
++import android.content.BroadcastReceiver
++import android.content.Context
++import android.content.ContextWrapper
++import android.content.Intent
++import android.content.IntentFilter
++import android.os.Build
++import android.os.Handler
++
++/** Adapts the legacy SDL SDK's internal receivers to current Android registration rules. */
++internal class SdlReceiverContext(base: Context) : ContextWrapper(base) {
++    override fun getApplicationContext(): Context = this
++
++    override fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter): Intent? =
++        if (Build.VERSION.SDK_INT >= 33) {
++            super.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
++        } else {
++            super.registerReceiver(receiver, filter)
++        }
++
++    override fun registerReceiver(
++        receiver: BroadcastReceiver?,
++        filter: IntentFilter,
++        broadcastPermission: String?,
++        scheduler: Handler?
++    ): Intent? =
++        if (Build.VERSION.SDK_INT >= 33) {
++            super.registerReceiver(receiver, filter, broadcastPermission, scheduler, Context.RECEIVER_NOT_EXPORTED)
++        } else {
++            super.registerReceiver(receiver, filter, broadcastPermission, scheduler)
++        }
++}
+diff --git a/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlSessionProfile.kt b/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlSessionProfile.kt
+new file mode 100644
+index 0000000..9252309
+--- /dev/null
++++ b/app/src/main/java/com/andrerinas/openheadunit/sdl/SdlSessionProfile.kt
+@@ -0,0 +1,20 @@
++package com.andrerinas.openheadunit.sdl
++
++import com.andrerinas.openheadunit.aap.protocol.proto.Control
++
++/** Session-only geometry, never written to the normal Self Mode settings. */
++object SdlSessionProfile {
++    @Volatile var active = false
++    @Volatile var panelWidth = 800
++    @Volatile var panelHeight = 480
++    @Volatile var dpi = 160
++    val resolution: Control.Service.MediaSinkService.VideoConfiguration.VideoCodecResolutionType
++        get() = Control.Service.MediaSinkService.VideoConfiguration.VideoCodecResolutionType.values()
++            .firstOrNull { it.name == "_${panelWidth}x${panelHeight}" }
++            ?: Control.Service.MediaSinkService.VideoConfiguration.VideoCodecResolutionType._800x480
++    val size: Pair<Int, Int> get() {
++        val parts = resolution.name.removePrefix("_").split("x")
++        return parts[0].toInt() to parts[1].toInt()
++    }
++    val pixelAspect: Int get() = (10000.0 * panelWidth * size.second / (panelHeight * size.first)).toInt()
++}
+diff --git a/app/src/main/java/com/andrerinas/openheadunit/utils/HeadUnitScreenConfig.kt b/app/src/main/java/com/andrerinas/openheadunit/utils/HeadUnitScreenConfig.kt
+index fbbb401..677a2aa 100644
+--- a/app/src/main/java/com/andrerinas/openheadunit/utils/HeadUnitScreenConfig.kt
++++ b/app/src/main/java/com/andrerinas/openheadunit/utils/HeadUnitScreenConfig.kt
+@@ -325,6 +325,19 @@ object HeadUnitScreenConfig {
+     /** All geometry fields in service discovery, including input and fallback, share this value. */
+     fun announceGeometry(owner: Any, context: Context, metrics: DisplayMetrics, settings: Settings): AnnouncedGeometry = updateGeometry {
+         if (announcementOwner?.get() === owner) announcedGeometry?.let { return@updateGeometry it }
++        if (com.andrerinas.openheadunit.sdl.SdlSessionProfile.active) {
++            val profile = com.andrerinas.openheadunit.sdl.SdlSessionProfile
++            negotiatedResolutionType = profile.resolution
++            val (w,h) = profile.size
++            val geometry = AnnouncedGeometry(profile.resolution,w,h,0,0,profile.pixelAspect,
++                AnnouncedDensityPolicy.Decision(profile.dpi,profile.dpi,AnnouncedDensityPolicy.Reason.AS_STORED))
++            announcedGeometry=geometry
++            announcementOwner=WeakReference(owner)
++            announcedWidthMargin=0;announcedHeightMargin=0
++            offeredFallback=null
++            AppLog.i("SDL profile: announce ${w}x$h panel=${profile.panelWidth}x${profile.panelHeight} dpi=${profile.dpi}")
++            return@updateGeometry geometry
++        }
+         // Remote EOF may reconnect without an Activity teardown. Announcement lifetime belongs
+         // to the transport, not to a process-wide unlock callback or a particular screen instance.
+         unlockResolution()
+@@ -660,7 +673,8 @@ object HeadUnitScreenConfig {
+ 
+     /** The size the phone is sending: the fallback's once it has chosen it. */
+     private fun activeSize(): Pair<Int, Int> =
+-        VideoFallbackPolicy.sizeOf(adoptedFallback?.type ?: negotiatedResolutionType)
++        if (com.andrerinas.openheadunit.sdl.SdlSessionProfile.active) com.andrerinas.openheadunit.sdl.SdlSessionProfile.size
++        else VideoFallbackPolicy.sizeOf(adoptedFallback?.type ?: negotiatedResolutionType)
+ 
+     @Synchronized
+     fun getNegotiatedHeight(): Int = activeSize().second
+@@ -685,6 +699,7 @@ object HeadUnitScreenConfig {
+ 
+     @Synchronized
+     fun getHeightMargin(): Int {
++        if (com.andrerinas.openheadunit.sdl.SdlSessionProfile.active) return 0
+         val fallback = adoptedFallback ?: return if (marginStrategy() == MarginStrategyPolicy.Strategy.PAR) 0
+             else ProjectionGeometryPolicy.heightMargin(getNegotiatedHeight(), screenHeightPx, scaleFactor)
+         return scaledFallbackMargins(fallback).height
+@@ -692,6 +707,7 @@ object HeadUnitScreenConfig {
+ 
+     @Synchronized
+     fun getWidthMargin(): Int {
++        if (com.andrerinas.openheadunit.sdl.SdlSessionProfile.active) return 0
+         val fallback = adoptedFallback ?: return if (marginStrategy() == MarginStrategyPolicy.Strategy.PAR) 0
+             else ProjectionGeometryPolicy.widthMargin(getNegotiatedWidth(), screenWidthPx, scaleFactor)
+         return scaledFallbackMargins(fallback).width
+@@ -743,6 +759,7 @@ object HeadUnitScreenConfig {
+ 
+     @Synchronized
+     fun getPixelAspectRatioE4(): Int {
++        if (com.andrerinas.openheadunit.sdl.SdlSessionProfile.active) return com.andrerinas.openheadunit.sdl.SdlSessionProfile.pixelAspect
+         // The settings row normalises anything <= 0 to 10000, so 10000 is also "unset" and is what
+         // lets the derived value through. An explicit non-square choice always wins.
+         val manual = geometrySettings?.pixelAspectRatioE4 ?: 0
+diff --git a/app/src/main/res/layout-port/fragment_home.xml b/app/src/main/res/layout-port/fragment_home.xml
+index 3676c90..6b55535 100644
+--- a/app/src/main/res/layout-port/fragment_home.xml
++++ b/app/src/main/res/layout-port/fragment_home.xml
+@@ -92,6 +92,19 @@
+                 android:text="@string/self_mode" />
+         </LinearLayout>
+ 
++        <LinearLayout
++            android:id="@+id/sdl_bridge_button"
++            style="@style/HomeTile"
++            android:layout_width="0dp"
++            android:layout_weight="1">
++            <ImageView
++                style="@style/HomeTileIcon"
++                app:srcCompat="@drawable/ic_usb_white" />
++            <com.andrerinas.openheadunit.view.WordFitTextView
++                style="@style/HomeTileLabel.Wrap"
++                android:text="@string/sdl_bridge" />
++        </LinearLayout>
++
+         <LinearLayout
+             android:id="@+id/settings_button"
+             style="@style/HomeTile"
+diff --git a/app/src/main/res/layout/fragment_home.xml b/app/src/main/res/layout/fragment_home.xml
+index d20d2bb..1ae8ff6 100644
+--- a/app/src/main/res/layout/fragment_home.xml
++++ b/app/src/main/res/layout/fragment_home.xml
+@@ -79,6 +79,17 @@
+                         android:text="@string/self_mode" />
+                 </LinearLayout>
+ 
++                <LinearLayout
++                    android:id="@+id/sdl_bridge_button"
++                    style="@style/HomeTile">
++                    <ImageView
++                        style="@style/HomeTileIcon"
++                        app:srcCompat="@drawable/ic_usb_white" />
++                    <com.andrerinas.openheadunit.view.WordFitTextView
++                        style="@style/HomeTileLabel.Wrap"
++                        android:text="@string/sdl_bridge" />
++                </LinearLayout>
++
+                 <LinearLayout
+                     android:id="@+id/settings_button"
+                     style="@style/HomeTile">
+diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+index 995f673..37fb4cc 100644
+--- a/app/src/main/res/values/strings.xml
++++ b/app/src/main/res/values/strings.xml
+@@ -1,4 +1,11 @@
+ <resources>
++    <string name="sdl_bridge">SDL bridge</string>
++    <string name="sdl_bridge_parked_title">Android Auto → SDL</string>
++    <string name="sdl_bridge_parked_message">Protótipo experimental. Confirme que o veículo está estacionado e com o freio de estacionamento acionado. O TomTom original precisa estar fechado.</string>
++    <string name="sdl_bridge_start">Conectar à central</string>
++    <string name="sdl_bridge_disconnect_title">Desconectar SDL</string>
++    <string name="sdl_bridge_disconnect_message">Isso encerra a sessão SDL com a central e interrompe o vídeo do protótipo.</string>
++    <string name="sdl_bridge_disconnect">Desconectar</string>
+     <string name="hct_aa_wake_not_sent">The connection state changed, so the phone reconnect was not started. Try again after the current connection activity finishes.</string>
+     <string name="hct_aa_selection_pending">The previous phone connection is still being handled. This selection has not replaced it.</string>
+     <string name="hct_aa_wake_unconfirmed">The head unit has not completed the Android Auto connection. Select the phone again to retry, or reconnect it from its Bluetooth settings. Open Headunit is still listening for Android Auto.</string>
+diff --git a/app/src/main/res/xml/sdl_accessories.xml b/app/src/main/res/xml/sdl_accessories.xml
+new file mode 100644
+index 0000000..9c4ce25
+--- /dev/null
++++ b/app/src/main/res/xml/sdl_accessories.xml
+@@ -0,0 +1,3 @@
++<resources>
++    <usb-accessory manufacturer="SDL" model="Core" />
++</resources>
