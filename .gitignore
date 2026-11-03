@@ -1,0 +1,15 @@
+# Sistema operacional e editores
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+
+# Saídas locais de build e segredos
+.gradle/
+build/
+**/build/
+*.jks
+*.keystore
+keystore.*
+local.properties

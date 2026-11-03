@@ -1,0 +1,372 @@
+Lc/a/a/l1/b$c; a(Lc/a/a/j2/e;)V
+0000 invoke-virtual v8, Ljava/lang/Enum;->ordinal()I
+0006 move-result v0
+0008 const/4 v1, 1
+000a const/4 v2, 0
+000c const/4 v3, 0
+000e if-eqz v0, +0bch
+0012 if-eq v0, v1, +0bah
+0016 const/4 v1, 2
+0018 if-eq v0, v1, +023h
+001c const/4 v1, 3
+001e if-eq v0, v1, +0b3h
+0022 const/4 v1, 4
+0024 if-eq v0, v1, +0b0h
+0028 const/4 v1, 5
+002a if-ne v0, v1, +003h
+002e goto +18h
+0030 new-instance v0, Ljava/lang/IllegalArgumentException;
+0034 new-instance v1, Ljava/lang/StringBuilder;
+0038 invoke-direct v1, Ljava/lang/StringBuilder;-><init>()V
+003e const-string v2, "Unknown state: "
+0042 invoke-virtual v1, v2, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+0048 invoke-virtual v1, v8, Ljava/lang/StringBuilder;->append(Ljava/lang/Object;)Ljava/lang/StringBuilder;
+004e invoke-virtual v1, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+0054 move-result-object v8
+0056 invoke-direct v0, v8, Ljava/lang/IllegalArgumentException;-><init>(Ljava/lang/String;)V
+005c throw v0
+005e iget-object v0, v7, Lc/a/a/l1/b$c;->a Ljava/util/List;
+0062 invoke-interface v0, Ljava/util/List;->size()I
+0068 move-result v0
+006a if-nez v0, +08dh
+006e iget-object v0, v7, Lc/a/a/l1/b$c;->t Lc/a/a/l1/b;
+0072 new-instance v1, Lc/a/a/l1/b$g;
+0076 invoke-direct v1, v0, v3, Lc/a/a/l1/b$g;-><init>(Lc/a/a/l1/b; Lc/a/a/l1/b$a;)V
+007c iput-object v1, v0, Lc/a/a/l1/b;->c1 Lc/a/a/l1/b$g;
+0080 iget-object v0, v0, Lc/a/a/l1/b;->W0 Lc/a/a/d2/a;
+0084 invoke-interface v0, v1, Lc/a/a/d2/a;->v2(Lc/a/a/d2/a$a;)V
+008a iget-object v0, v7, Lc/a/a/l1/b$c;->t Lc/a/a/l1/b;
+008e iget-object v0, v0, Lc/a/a/l1/b;->X0 Lc/a/a/j2/d;
+0092 check-cast v0, Lc/a/a/m1/d;
+0096 invoke-virtual v0, Lc/a/a/m1/d;->d()Z
+009c move-result v1
+009e if-eqz v1, +06bh
+00a2 iget-object v0, v0, Lc/a/a/m1/d;->h Lcom/smartdevicelink/proxy/SdlProxyALM;
+00a6 invoke-virtual v0, Lcom/smartdevicelink/proxy/SdlProxyALM;->getVehicleType()Lcom/smartdevicelink/proxy/rpc/VehicleType;
+00ac move-result-object v0
+00ae if-eqz v0, +018h
+00b2 new-instance v1, Lc/a/a/j2/c;
+00b6 invoke-virtual v0, Lcom/smartdevicelink/proxy/rpc/VehicleType;->getMake()Ljava/lang/String;
+00bc move-result-object v4
+00be invoke-virtual v0, Lcom/smartdevicelink/proxy/rpc/VehicleType;->getModel()Ljava/lang/String;
+00c4 move-result-object v5
+00c6 invoke-virtual v0, Lcom/smartdevicelink/proxy/rpc/VehicleType;->getModelYear()Ljava/lang/String;
+00cc move-result-object v6
+00ce invoke-virtual v0, Lcom/smartdevicelink/proxy/rpc/VehicleType;->getTrim()Ljava/lang/String;
+00d4 move-result-object v0
+00d6 invoke-direct v1, v4, v5, v6, v0, Lc/a/a/j2/c;-><init>(Ljava/lang/String; Ljava/lang/String; Ljava/lang/String; Ljava/lang/String;)V
+00dc goto +2h
+00de move-object v1, v3
+00e0 if-eqz v1, +00dh
+00e4 iget-object v0, v7, Lc/a/a/l1/b$c;->t Lc/a/a/l1/b;
+00e8 iget-object v0, v0, Lc/a/a/l1/b;->k1 Lc/a/a/l1/c;
+00ec iget-object v0, v0, Lc/a/a/l1/c;->a Ljava/util/List;
+00f0 invoke-interface v0, v1, Ljava/util/List;->contains(Ljava/lang/Object;)Z
+00f6 move-result v0
+00f8 goto +2h
+00fa const/4 v0, 0
+00fc if-eqz v0, +01bh
+0100 iget-object v0, v7, Lc/a/a/l1/b$c;->a Ljava/util/List;
+0104 new-instance v1, Lc/a/a/l1/b$h;
+0108 iget-object v4, v7, Lc/a/a/l1/b$c;->t Lc/a/a/l1/b;
+010c invoke-direct v1, v4, v3, Lc/a/a/l1/b$h;-><init>(Lc/a/a/l1/b; Lc/a/a/l1/b$a;)V
+0112 invoke-interface v0, v1, Ljava/util/List;->add(Ljava/lang/Object;)Z
+0118 iget-object v0, v7, Lc/a/a/l1/b$c;->a Ljava/util/List;
+011c new-instance v1, Lc/a/a/l1/b$b;
+0120 iget-object v4, v7, Lc/a/a/l1/b$c;->t Lc/a/a/l1/b;
+0124 invoke-direct v1, v4, v3, Lc/a/a/l1/b$b;-><init>(Lc/a/a/l1/b; Lc/a/a/l1/b$a;)V
+012a invoke-interface v0, v1, Ljava/util/List;->add(Ljava/lang/Object;)Z
+0130 goto +2ah
+0132 sget-boolean v0, Lc/a/a/o3/z1;->d Z
+0136 if-eqz v0, +012h
+013a new-instance v0, Ljava/lang/StringBuilder;
+013e invoke-direct v0, Ljava/lang/StringBuilder;-><init>()V
+0144 const-string v4, "The HU isn't whitelisted: "
+0148 invoke-virtual v0, v4, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+014e invoke-virtual v0, v1, Ljava/lang/StringBuilder;->append(Ljava/lang/Object;)Ljava/lang/StringBuilder;
+0154 invoke-virtual v0, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+015a iget-object v0, v7, Lc/a/a/l1/b$c;->a Ljava/util/List;
+015e new-instance v1, Lc/a/a/l1/b$d;
+0162 iget-object v4, v7, Lc/a/a/l1/b$c;->t Lc/a/a/l1/b;
+0166 invoke-direct v1, v4, v3, Lc/a/a/l1/b$d;-><init>(Lc/a/a/l1/b; Lc/a/a/l1/b$a;)V
+016c invoke-interface v0, v1, Ljava/util/List;->add(Ljava/lang/Object;)Z
+0172 goto +9h
+0174 new-instance v8, Ljava/lang/IllegalStateException;
+0178 const-string v0, "Cannot call getVehicleType before SDL is connected"
+017c invoke-direct v8, v0, Ljava/lang/IllegalStateException;-><init>(Ljava/lang/String;)V
+0182 throw v8
+0184 const/4 v1, 0
+0186 iget-object v0, v7, Lc/a/a/l1/b$c;->a Ljava/util/List;
+018a invoke-interface v0, Ljava/util/List;->iterator()Ljava/util/Iterator;
+0190 move-result-object v0
+0192 invoke-interface v0, Ljava/util/Iterator;->hasNext()Z
+0198 move-result v2
+019a if-eqz v2, +00ch
+019e invoke-interface v0, Ljava/util/Iterator;->next()Ljava/lang/Object;
+01a4 move-result-object v2
+01a6 check-cast v2, Lc/a/a/j2/b$a;
+01aa invoke-interface v2, v8, Lc/a/a/j2/b$a;->a(Lc/a/a/j2/e;)V
+01b0 goto -fh
+01b2 if-eqz v1, +014h
+01b6 iget-object v8, v7, Lc/a/a/l1/b$c;->a Ljava/util/List;
+01ba invoke-interface v8, Ljava/util/List;->clear()V
+01c0 iget-object v8, v7, Lc/a/a/l1/b$c;->t Lc/a/a/l1/b;
+01c4 iget-object v0, v8, Lc/a/a/l1/b;->c1 Lc/a/a/l1/b$g;
+01c8 if-eqz v0, +009h
+01cc iget-object v1, v8, Lc/a/a/l1/b;->W0 Lc/a/a/d2/a;
+01d0 invoke-interface v1, v0, Lc/a/a/d2/a;->h(Lc/a/a/d2/a$a;)V
+01d6 iput-object v3, v8, Lc/a/a/l1/b;->c1 Lc/a/a/l1/b$g;
+01da return-void 
+Lc/a/a/l1/b$h; a(Lc/a/a/j2/e;)V
+0000 invoke-virtual v12, Ljava/lang/Enum;->ordinal()I
+0006 move-result v0
+0008 if-eqz v0, +179h
+000c const/4 v1, 1
+000e if-eq v0, v1, +176h
+0012 const/4 v2, 2
+0014 if-eq v0, v2, +024h
+0018 const/4 v1, 3
+001a if-eq v0, v1, +175h
+001e const/4 v1, 4
+0020 if-eq v0, v1, +16dh
+0024 const/4 v1, 5
+0026 if-ne v0, v1, +004h
+002a goto/16 +168h
+002e new-instance v0, Ljava/lang/IllegalArgumentException;
+0032 new-instance v1, Ljava/lang/StringBuilder;
+0036 invoke-direct v1, Ljava/lang/StringBuilder;-><init>()V
+003c const-string v2, "Unknown state: "
+0040 invoke-virtual v1, v2, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+0046 invoke-virtual v1, v12, Ljava/lang/StringBuilder;->append(Ljava/lang/Object;)Ljava/lang/StringBuilder;
+004c invoke-virtual v1, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+0052 move-result-object v12
+0054 invoke-direct v0, v12, Ljava/lang/IllegalArgumentException;-><init>(Ljava/lang/String;)V
+005a throw v0
+005c iget-object v12, v11, Lc/a/a/l1/b$h;->a Lc/a/a/l1/b;
+0060 iget-boolean v0, v12, Lc/a/a/l1/b;->h1 Z
+0064 if-nez v0, +150h
+0068 iget-object v0, v12, Lc/a/a/l1/b;->i1 Lc/a/a/c2/a;
+006c iget-object v12, v12, Lc/a/a/l1/b;->X0 Lc/a/a/j2/d;
+0070 check-cast v12, Lc/a/a/m1/d;
+0074 invoke-virtual v12, Lc/a/a/m1/d;->d()Z
+007a move-result v2
+007c if-eqz v2, +137h
+0080 iget-object v2, v12, Lc/a/a/m1/d;->l Landroid/util/DisplayMetrics;
+0084 if-nez v2, +008h
+0088 invoke-virtual v12, Lc/a/a/m1/d;->b()Landroid/util/DisplayMetrics;
+008e move-result-object v2
+0090 iput-object v2, v12, Lc/a/a/m1/d;->l Landroid/util/DisplayMetrics;
+0094 iget-object v12, v12, Lc/a/a/m1/d;->l Landroid/util/DisplayMetrics;
+0098 iget-object v2, v11, Lc/a/a/l1/b$h;->a Lc/a/a/l1/b;
+009c iget-object v2, v2, Lc/a/a/l1/b;->X0 Lc/a/a/j2/d;
+00a0 check-cast v2, Lc/a/a/m1/d;
+00a4 invoke-virtual v2, Lc/a/a/m1/d;->d()Z
+00aa move-result v3
+00ac if-eqz v3, +117h
+00b0 iget-object v3, v2, Lc/a/a/m1/d;->l Landroid/util/DisplayMetrics;
+00b4 if-nez v3, +008h
+00b8 invoke-virtual v2, Lc/a/a/m1/d;->b()Landroid/util/DisplayMetrics;
+00be move-result-object v3
+00c0 iput-object v3, v2, Lc/a/a/m1/d;->l Landroid/util/DisplayMetrics;
+00c4 iget-object v3, v2, Lc/a/a/m1/d;->n Landroid/view/Surface;
+00c8 if-nez v3, +0e9h
+00cc iget-object v4, v2, Lc/a/a/m1/d;->h Lcom/smartdevicelink/proxy/SdlProxyALM;
+00d0 iget v5, v2, Lc/a/a/m1/d;->b I
+00d4 iget v6, v2, Lc/a/a/m1/d;->c I
+00d8 iget-object v3, v2, Lc/a/a/m1/d;->l Landroid/util/DisplayMetrics;
+00dc iget v7, v3, Landroid/util/DisplayMetrics;->widthPixels I
+00e0 iget v8, v3, Landroid/util/DisplayMetrics;->heightPixels I
+00e4 iget v9, v2, Lc/a/a/m1/d;->d I
+00e8 const/4 v10, 0
+00ea invoke-virtual/range v4 ... v10, Lcom/smartdevicelink/proxy/SdlProxyBase;->createOpenGLInputSurface(I I I I I Z)Landroid/view/Surface;
+00f0 move-result-object v3
+00f2 iput-object v3, v2, Lc/a/a/m1/d;->n Landroid/view/Surface;
+00f6 if-nez v3, +0d2h
+00fa new-instance v12, Ljava/lang/RuntimeException;
+00fe const-string v0, "SdlProxy cannot create surface for streaming; 
+mSdlProxyAlm="
+0102 invoke-static v0, Lc/c/a/a/a;->K(Ljava/lang/String;)Ljava/lang/StringBuilder;
+0108 move-result-object v0
+010a iget-object v3, v2, Lc/a/a/m1/d;->h Lcom/smartdevicelink/proxy/SdlProxyALM;
+010e new-instance v4, Lc/a/a/o3/o4/a;
+0112 invoke-direct v4, v3, Lc/a/a/o3/o4/a;-><init>(Ljava/lang/Object;)V
+0118 const-string v3, "sdlSession"
+011c invoke-virtual v4, v3, Lc/a/a/o3/o4/a;->b(Ljava/lang/String;)Lc/a/a/o3/o4/a;
+0122 const-string v5, "getProtocolVersion"
+0126 invoke-virtual v4, v5, Lc/a/a/o3/o4/a;->e(Ljava/lang/String;)Lc/a/a/o3/o4/a;
+012c const-string v5, "navServiceStartResponse"
+0130 invoke-virtual v4, v5, Lc/a/a/o3/o4/a;->b(Ljava/lang/String;)Lc/a/a/o3/o4/a;
+0136 const-string v5, "navServiceStartRejectedParams"
+013a invoke-virtual v4, v5, Lc/a/a/o3/o4/a;->b(Ljava/lang/String;)Lc/a/a/o3/o4/a;
+0140 invoke-virtual v4, Lc/a/a/o3/o4/a;->a()V
+0146 iget-object v5, v4, Lc/a/a/o3/o4/a;->b Ljava/lang/StringBuilder;
+014a invoke-virtual v5, v3, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+0150 iget-object v5, v4, Lc/a/a/o3/o4/a;->b Ljava/lang/StringBuilder;
+0154 const-string v6, ": "
+0158 invoke-virtual v5, v6, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+015e iget-object v5, v4, Lc/a/a/o3/o4/a;->a Ljava/lang/Object;
+0162 if-eqz v5, +035h
+0166 invoke-virtual v5, Ljava/lang/Object;->getClass()Ljava/lang/Class;
+016c move-result-object v5
+016e invoke-virtual v4, v5, v3, Lc/a/a/o3/o4/a;->c(Ljava/lang/Class; Ljava/lang/String;)Ljava/lang/reflect/Field;
+0174 move-result-object v3
+0176 invoke-virtual v3, v1, Ljava/lang/reflect/Field;->setAccessible(Z)V
+017c iget-object v1, v4, Lc/a/a/o3/o4/a;->a Ljava/lang/Object;
+0180 invoke-virtual v3, v1, Ljava/lang/reflect/Field;->get(Ljava/lang/Object;)Ljava/lang/Object;
+0186 move-result-object v1
+0188 new-instance v3, Lc/a/a/o3/o4/a;
+018c invoke-direct v3, v1, Lc/a/a/o3/o4/a;-><init>(Ljava/lang/Object;)V
+0192 const-string v1, "getSdlConnection"
+0196 invoke-virtual v3, v1, Lc/a/a/o3/o4/a;->e(Ljava/lang/String;)Lc/a/a/o3/o4/a;
+019c invoke-virtual v3, Lc/a/a/o3/o4/a;->toString()Ljava/lang/String;
+01a2 move-result-object v1
+01a4 iget-object v3, v4, Lc/a/a/o3/o4/a;->b Ljava/lang/StringBuilder;
+01a8 const-string v5, "{"
+01ac invoke-virtual v3, v5, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+01b2 iget-object v3, v4, Lc/a/a/o3/o4/a;->b Ljava/lang/StringBuilder;
+01b6 invoke-virtual v3, v1, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+01bc iget-object v1, v4, Lc/a/a/o3/o4/a;->b Ljava/lang/StringBuilder;
+01c0 const-string v3, "}"
+01c4 invoke-virtual v1, v3, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+01ca goto +1dh
+01cc new-instance v1, Ljava/lang/NullPointerException;
+01d0 const-string v3, "dumped object is null"
+01d4 invoke-direct v1, v3, Ljava/lang/NullPointerException;-><init>(Ljava/lang/String;)V
+01da throw v1
+01dc move-exception v1
+01de iget-object v3, v4, Lc/a/a/o3/o4/a;->b Ljava/lang/StringBuilder;
+01e2 const-string v5, "<threw "
+01e6 invoke-virtual v3, v5, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+01ec invoke-virtual v1, Ljava/lang/Exception;->toString()Ljava/lang/String;
+01f2 move-result-object v1
+01f4 invoke-virtual v3, v1, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+01fa const-string v1, ">"
+01fe invoke-virtual v3, v1, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+0204 invoke-virtual v4, Lc/a/a/o3/o4/a;->toString()Ljava/lang/String;
+020a move-result-object v1
+020c invoke-virtual v0, v1, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+0212 const-string v1, "
+Internal connection state= ["
+0216 invoke-virtual v0, v1, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+021c invoke-virtual v2, Lc/a/a/m1/d;->d()Z
+0222 move-result v1
+0224 invoke-virtual v0, v1, Ljava/lang/StringBuilder;->append(Z)Ljava/lang/StringBuilder;
+022a const-string v1, "], sdlProxyConnectionState= ["
+022e invoke-virtual v0, v1, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+0234 iget-object v1, v2, Lc/a/a/m1/d;->h Lcom/smartdevicelink/proxy/SdlProxyALM;
+0238 invoke-virtual v1, Lcom/smartdevicelink/proxy/SdlProxyBase;->getIsConnected()Ljava/lang/Boolean;
+023e move-result-object v1
+0240 invoke-virtual v0, v1, Ljava/lang/StringBuilder;->append(Ljava/lang/Object;)Ljava/lang/StringBuilder;
+0246 const-string v1, "]
+Connection details= ["
+024a invoke-virtual v0, v1, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+0250 iget-object v1, v2, Lc/a/a/m1/d;->h Lcom/smartdevicelink/proxy/SdlProxyALM;
+0254 invoke-virtual v1, Lcom/smartdevicelink/proxy/SdlProxyBase;->getConnectionDetails()Ljava/lang/String;
+025a move-result-object v1
+025c invoke-virtual v0, v1, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+0262 const-string v1, "]
+Is video streaming capability available="
+0266 invoke-virtual v0, v1, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+026c iget-object v1, v2, Lc/a/a/m1/d;->h Lcom/smartdevicelink/proxy/SdlProxyALM;
+0270 invoke-virtual v1, Lcom/smartdevicelink/proxy/SdlProxyBase;->getSystemCapabilityManager()Lcom/smartdevicelink/proxy/SystemCapabilityManager;
+0276 move-result-object v1
+0278 sget-object v2, Lcom/smartdevicelink/proxy/rpc/enums/SystemCapabilityType;->VIDEO_STREAMING Lcom/smartdevicelink/proxy/rpc/enums/SystemCapabilityType;
+027c invoke-virtual v1, v2, Lcom/smartdevicelink/proxy/SystemCapabilityManager;->isCapabilitySupported(Lcom/smartdevicelink/proxy/rpc/enums/SystemCapabilityType;)Z
+0282 move-result v1
+0284 invoke-virtual v0, v1, Ljava/lang/StringBuilder;->append(Z)Ljava/lang/StringBuilder;
+028a invoke-virtual v0, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+0290 move-result-object v0
+0292 invoke-direct v12, v0, Ljava/lang/RuntimeException;-><init>(Ljava/lang/String;)V
+0298 throw v12
+029a iget-object v1, v2, Lc/a/a/m1/d;->n Landroid/view/Surface;
+029e new-instance v2, Lc/a/a/l1/b$e;
+02a2 iget-object v3, v11, Lc/a/a/l1/b$h;->a Lc/a/a/l1/b;
+02a6 const/4 v4, 0
+02a8 invoke-direct v2, v3, v4, Lc/a/a/l1/b$e;-><init>(Lc/a/a/l1/b; Lc/a/a/l1/b$a;)V
+02ae iget-object v3, v3, Lc/a/a/l1/b;->t Lc/a/a/j2/b;
+02b2 check-cast v3, Lc/a/a/m1/b;
+02b6 iget-object v3, v3, Lc/a/a/m1/b;->d Lc/a/a/m1/d;
+02ba if-eqz v3, +008h
+02be iget-object v3, v3, Lc/a/a/m1/d;->k Lc/a/a/m1/i/a;
+02c2 invoke-interface v0, v12, v1, v2, v3, Lc/a/a/c2/a;->X0(Landroid/util/DisplayMetrics; Landroid/view/Surface; Lc/a/a/c2/a$a; Lc/a/a/h0/m0;)V
+02c8 goto +1eh
+02ca new-instance v12, Ljava/lang/IllegalStateException;
+02ce const-string v0, "Cannot interact with SDL when the feature is disabled"
+02d2 invoke-direct v12, v0, Ljava/lang/IllegalStateException;-><init>(Ljava/lang/String;)V
+02d8 throw v12
+02da new-instance v12, Ljava/lang/IllegalStateException;
+02de const-string v0, "Get surface before SDL is connected."
+02e2 invoke-direct v12, v0, Ljava/lang/IllegalStateException;-><init>(Ljava/lang/String;)V
+02e8 throw v12
+02ea new-instance v12, Ljava/lang/IllegalStateException;
+02ee const-string v0, "Get display metrics before SDL is connected."
+02f2 invoke-direct v12, v0, Ljava/lang/IllegalStateException;-><init>(Ljava/lang/String;)V
+02f8 throw v12
+02fa iget-object v12, v11, Lc/a/a/l1/b$h;->a Lc/a/a/l1/b;
+02fe invoke-virtual v12, Lc/a/a/l1/b;->f()V
+0304 return-void 
+Lc/a/a/m1/d; a(Landroid/hardware/usb/UsbAccessory;)V
+0000 iget-object v0, v8, Lc/a/a/m1/d;->h Lcom/smartdevicelink/proxy/SdlProxyALM;
+0004 if-nez v0, +07bh
+0008 iget-boolean v0, v8, Lc/a/a/m1/d;->o Z
+000c if-eqz v0, +005h
+0010 sget-boolean v9, Lc/a/a/o3/z1;->d Z
+0014 return-void 
+0016 sget-object v0, Lc/a/a/j2/e;->t Lc/a/a/j2/e;
+001a invoke-virtual v8, v0, Lc/a/a/m1/d;->g(Lc/a/a/j2/e;)V
+0020 new-instance v2, Lc/a/a/m1/d$a;
+0024 const/4 v0, 0
+0026 invoke-direct v2, v8, v0, Lc/a/a/m1/d$a;-><init>(Lc/a/a/m1/d; Lc/a/a/m1/c;)V
+002c iget-object v0, v8, Lc/a/a/m1/d;->a Landroid/content/Context;
+0030 invoke-virtual v0, Landroid/content/Context;->getResources()Landroid/content/res/Resources;
+0036 move-result-object v0
+0038 const v1, 2131821619
+003e invoke-virtual v0, v1, Landroid/content/res/Resources;->getString(I)Ljava/lang/String;
+0044 move-result-object v3
+0046 const v1, 2131821620
+004c invoke-virtual v0, v1, Landroid/content/res/Resources;->getString(I)Ljava/lang/String;
+0052 move-result-object v4
+0054 new-instance v0, Ljava/util/Vector;
+0058 invoke-direct v0, Ljava/util/Vector;-><init>()V
+005e sget-object v1, Lcom/smartdevicelink/proxy/rpc/enums/AppHMIType;->NAVIGATION Lcom/smartdevicelink/proxy/rpc/enums/AppHMIType;
+0062 invoke-virtual v0, v1, Ljava/util/Vector;->add(Ljava/lang/Object;)Z
+0068 new-instance v7, Lcom/smartdevicelink/transport/USBTransportConfig;
+006c iget-object v1, v8, Lc/a/a/m1/d;->a Landroid/content/Context;
+0070 invoke-direct v7, v1, v9, Lcom/smartdevicelink/transport/USBTransportConfig;-><init>(Landroid/content/Context; Landroid/hardware/usb/UsbAccessory;)V
+0076 new-instance v9, Lcom/smartdevicelink/proxy/SdlProxyBuilder$Builder;
+007a sget-object v5, Ljava/lang/Boolean;->FALSE Ljava/lang/Boolean;
+007e iget-object v6, v8, Lc/a/a/m1/d;->a Landroid/content/Context;
+0082 move-object v1, v9
+0084 invoke-direct/range v1 ... v6, Lcom/smartdevicelink/proxy/SdlProxyBuilder$Builder;-><init>(Lcom/smartdevicelink/proxy/interfaces/IProxyListenerALM; Ljava/lang/String; Ljava/lang/String; Ljava/lang/Boolean; Landroid/content/Context;)V
+008a invoke-virtual v9, v0, Lcom/smartdevicelink/proxy/SdlProxyBuilder$Builder;->setVrAppHMITypes(Ljava/util/Vector;)Lcom/smartdevicelink/proxy/SdlProxyBuilder$Builder;
+0090 move-result-object v9
+0092 invoke-virtual v9, v7, Lcom/smartdevicelink/proxy/SdlProxyBuilder$Builder;->setTransportType(Lcom/smartdevicelink/transport/BaseTransportConfig;)Lcom/smartdevicelink/proxy/SdlProxyBuilder$Builder;
+0098 move-result-object v9
+009a const/4 v0, 1
+009c invoke-virtual v9, v0, Lcom/smartdevicelink/proxy/SdlProxyBuilder$Builder;->setCallbackToUIThread(Z)Lcom/smartdevicelink/proxy/SdlProxyBuilder$Builder;
+00a2 move-result-object v9
+00a4 invoke-virtual v9, Lcom/smartdevicelink/proxy/SdlProxyBuilder$Builder;->build()Lcom/smartdevicelink/proxy/SdlProxyALM;
+00aa move-result-object v9
+00ac iput-object v9, v8, Lc/a/a/m1/d;->h Lcom/smartdevicelink/proxy/SdlProxyALM;
+00b0 new-instance v0, Lc/a/a/m1/h/b;
+00b4 iget-object v1, v8, Lc/a/a/m1/d;->a Landroid/content/Context;
+00b8 invoke-direct v0, v1, v9, Lc/a/a/m1/h/b;-><init>(Landroid/content/Context; Lcom/smartdevicelink/proxy/SdlProxyALM;)V
+00be iput-object v0, v8, Lc/a/a/m1/d;->i Lc/a/a/m1/h/b;
+00c2 new-instance v0, Lc/a/a/m1/k/a;
+00c6 iget v1, v8, Lc/a/a/m1/d;->b I
+00ca invoke-direct v0, v9, v1, Lc/a/a/m1/k/a;-><init>(Lcom/smartdevicelink/proxy/SdlProxyALM; I)V
+00d0 iput-object v0, v8, Lc/a/a/m1/d;->j Lc/a/a/m1/k/a;
+00d4 new-instance v9, Lc/a/a/m1/i/a;
+00d8 iget-object v0, v8, Lc/a/a/m1/d;->h Lcom/smartdevicelink/proxy/SdlProxyALM;
+00dc invoke-direct v9, v0, Lc/a/a/m1/i/a;-><init>(Lcom/smartdevicelink/proxy/SdlProxyALM;)V
+00e2 iput-object v9, v8, Lc/a/a/m1/d;->k Lc/a/a/m1/i/a;
+00e6 return-void 
+00e8 move-exception v9
+00ea new-instance v0, Ljava/lang/RuntimeException;
+00ee const-string v1, "Exception caught when creating SdlProxyALM."
+00f2 invoke-direct v0, v1, v9, Ljava/lang/RuntimeException;-><init>(Ljava/lang/String; Ljava/lang/Throwable;)V
+00f8 throw v0
+00fa new-instance v9, Ljava/lang/IllegalStateException;
+00fe const-string v0, "SdlProxy is already in connected state."
+0102 invoke-direct v9, v0, Ljava/lang/IllegalStateException;-><init>(Ljava/lang/String;)V
+0108 throw v9

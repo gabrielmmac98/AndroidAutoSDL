@@ -1,0 +1,810 @@
+EVIDÊNCIAS LOCAIS — TOMTOM SDL
+Linhas relativas à extração JADX 1.5.3. Trechos com aviso de decompilação exigem leitura conjunta do bytecode.
+
+
+=== resources/AndroidManifest.xml ===
+1: <?xml version="1.0" encoding="utf-8"?>
+2: <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3:     android:versionCode="4074"
+4:     android:versionName="3.1.38-latam"
+5:     android:installLocation="auto"
+6:     android:compileSdkVersion="30"
+7:     android:compileSdkVersionCodename="11"
+8:     package="com.tomtom.gplay.navapp.nds"
+9:     platformBuildVersionCode="30"
+10:     platformBuildVersionName="11">
+11:     <uses-sdk
+12:         android:minSdkVersion="21"
+13:         android:targetSdkVersion="30"/>
+14:     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+15:     <uses-permission android:name="android.permission.READ_CONTACTS"/>
+16:     <uses-permission android:name="android.permission.WRITE_CONTACTS"/>
+17:     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+18:     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+19:     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+20:     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+510:         <service
+511:             android:name="com.tomtom.mykonosapp.MykonosAppService"
+512:             android:foregroundServiceType="location|mediaPlayback|dataSync"/>
+513:         <service
+514:             android:name="com.tomtom.navui.contentdownloader.library.impl.ContentDownloadService"
+515:             android:foregroundServiceType="dataSync"/>
+516:         <service android:name="com.tomtom.navui.sigpromptkit.SigTextToSpeechService"/>
+517:         <service android:name="com.tomtom.navui.sigpromptkit.AudioAlertsService"/>
+518:         <service android:name="com.tomtom.navui.sigpromptkit.spokenguidance.SpokenGuidanceService"/>
+519:         <service
+520:             android:label="Bundled Nuance TTS Service"
+521:             android:name="com.tomtom.navui.nuancespeech.BundleTtsService"
+522:             android:enabled="true"
+523:             android:exported="false">
+524:             <intent-filter>
+525:                 <action android:name="com.tomtom.navui.nuancespeech.START_TTS_SERVICE"/>
+526:                 <category android:name="com.tomtom.navui.nuancespeech.category.TTS"/>
+527:             </intent-filter>
+528:         </service>
+529:         <service
+530:             android:name="com.tomtom.navui.stockaudio.spp.SoundPromptPlayerService"
+531:             android:exported="false">
+532:             <intent-filter>
+533:                 <category android:name="android.intent.category.LAUNCHER"/>
+534:                 <action android:name="com.tomtom.navui.stockaudio.spp.ISoundPromptPlayerService"/>
+535:             </intent-filter>
+536:         </service>
+537:         <service
+538:             android:name="com.tomtom.navui.audio.source.SourceManagerService"
+539:             android:enabled="true"
+540:             android:exported="false">
+
+=== resources/res/xml/accepted_usb_accessories.xml ===
+1: <?xml version="1.0" encoding="utf-8"?>
+2: <resource>
+3:     <usb-accessory
+4:         manufacturer="SDL"
+5:         model="Core"
+6:         version="1"/>
+7: </resource>
+
+=== resources/res/xml/sdl_white_list.xml ===
+1: <?xml version="1.0" encoding="utf-8"?>
+2: <SdlHeadUnitWhileList xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tomtom="http://schemas.android.com/apk/res-auto">
+3:     <HeadUnitInfo
+4:         tomtom:mobile_vehicletype_make="TomTom"
+5:         tomtom:mobile_vehicletype_model="Mykonos"
+6:         tomtom:mobile_vehicletype_model_year="2018"
+7:         tomtom:mobile_vehicletype_trim="TT"/>
+8:     <HeadUnitInfo
+9:         tomtom:mobile_vehicletype_make="Toyota"
+10:         tomtom:mobile_vehicletype_model="EFC CORE"
+11:         tomtom:mobile_vehicletype_model_year="2018"
+12:         tomtom:mobile_vehicletype_trim="TY"/>
+13: </SdlHeadUnitWhileList>
+
+=== resources/res/values/strings.xml ===
+1074:     <string name="mobile_sdl_alert_app_in_background_text">To continue navigation, make sure the app is in the foreground on your phone and that any pop-ups are closed.</string>
+1075:     <string name="mobile_sdl_alert_feature_unavailable_text">This feature is unavailable while your phone is streaming to your vehicle.</string>
+1076:     <string name="mobile_sdl_alert_finish_start_up_flow_text">Finish setting up the app on your phone before streaming to your vehicle.</string>
+1077:     <string name="mobile_sdl_app_icon_name">GoNdsIcon</string>
+1078:     <string name="mobile_sdl_app_id">3610601450</string>
+1079:     <string name="mobile_sdl_app_name">TomTom</string>
+1080:     <string name="mobile_sdl_audio_mime_type_default">audio/raw</string>
+1081:     <string name="mobile_sdl_feature_toggle">SmartDeviceLink</string>
+1082:     <string name="mobile_sdl_lock_screen_description">Navigation is now streaming to the vehicle screen.</string>
+1083:     <string name="mobile_sdl_video_density_default">1.0</string>
+1084:     <string name="mobile_search_all_categories">All Categories</string>
+
+=== resources/res/values/integers.xml ===
+67:     <integer name="mobile_sdl_audio_sample_rate_default">16000</integer>
+68:     <integer name="mobile_sdl_image_quality">100</integer>
+69:     <integer name="mobile_sdl_video_bit_rate_default">1500000</integer>
+70:     <integer name="mobile_sdl_video_dpi_default">160</integer>
+71:     <integer name="mobile_sdl_video_frame_rate_default">30</integer>
+72:     <integer name="mobile_sdl_video_height_default">480</integer>
+73:     <integer name="mobile_sdl_video_iframe_interval_default">1</integer>
+74:     <integer name="mobile_sdl_video_width_default">800</integer>
+
+=== resources/res/values/bools.xml ===
+17:     <bool name="mobile_sdl_audio_encryption_default">false</bool>
+18:     <bool name="mobile_sdl_enabled_default">true</bool>
+19:     <bool name="mobile_sdl_kill_app_on_disconnect">true</bool>
+
+=== sources/com/smartdevicelink/BuildConfig.java ===
+1: package com.smartdevicelink;
+2: 
+3: /* loaded from: classes.dex */
+4: public final class BuildConfig {
+5:     public static final String APPLICATION_ID = "com.smartdevicelink";
+6:     public static final String BUILD_TYPE = "release";
+7:     public static final boolean DEBUG = false;
+8:     public static final String FLAVOR = "";
+9:     public static final int VERSION_CODE = 14;
+10:     public static final String VERSION_NAME = "4.12.2";
+11: }
+
+=== sources/com/tomtom/navui/mobilesdlport/MobileUsbAccessoryAttachmentActivity.java ===
+1: package com.tomtom.navui.mobilesdlport;
+2: 
+3: import android.app.Activity;
+4: import android.content.ComponentName;
+5: import android.content.Intent;
+6: import android.os.Parcelable;
+7: import com.smartdevicelink.transport.USBTransport;
+8: import n0.v.c.k;
+9: 
+10: /* loaded from: classes.dex */
+11: public final class MobileUsbAccessoryAttachmentActivity extends Activity {
+12:     @Override // android.app.Activity
+13:     public void onNewIntent(Intent intent) {
+14:         k.e(intent, "intent");
+15:         super.onNewIntent(intent);
+16:         setIntent(intent);
+17:     }
+18: 
+19:     @Override // android.app.Activity
+20:     public void onResume() {
+21:         super.onResume();
+22:         Intent intent = getIntent();
+23:         k.d(intent, "intent");
+24:         if (!k.a("android.hardware.usb.action.USB_ACCESSORY_ATTACHED", intent.getAction())) {
+25:             finish();
+26:             return;
+27:         }
+28:         Parcelable parcelableExtra = getIntent().getParcelableExtra("accessory");
+29:         Parcelable parcelableExtra2 = getIntent().getParcelableExtra("permission");
+30:         Intent intent2 = new Intent(USBTransport.ACTION_USB_ACCESSORY_ATTACHED);
+31:         intent2.putExtra("accessory", parcelableExtra);
+32:         intent2.putExtra("permission", parcelableExtra2);
+33:         String packageName = getPackageName();
+34:         String canonicalName = MobileSdlReceiver.class.getCanonicalName();
+35:         k.c(canonicalName);
+36:         intent2.setComponent(new ComponentName(packageName, canonicalName));
+37:         sendBroadcast(intent2);
+38:         finish();
+39:     }
+40: }
+
+=== sources/com/tomtom/navui/mobilesdlport/MobileSdlReceiver.java ===
+28:                 if (!"android.hardware.usb.action.USB_ACCESSORY_DETACHED".equals(action)) {
+29:                     throw new IllegalArgumentException(c.c.a.a.a.x("Received unknown action: ", action));
+30:                 }
+31:                 z = false;
+32:             }
+33:             if (intent.hasExtra("accessory")) {
+34:                 UsbAccessory usbAccessory = (UsbAccessory) intent.getParcelableExtra("accessory");
+35:                 if (z1.b) {
+36:                     StringBuilder sbK = c.c.a.a.a.K("USB accessory ");
+37:                     sbK.append(z ? "attached" : "detached");
+38:                     sbK.append(": ");
+39:                     sbK.append(usbAccessory);
+40:                     sbK.toString();
+41:                 }
+42:                 if (z) {
+43:                     if (USBTransport.isAccessorySupported(usbAccessory)) {
+44:                         UsbAccessory usbAccessory2 = bVar.i;
+45:                         if (usbAccessory2 != null) {
+46:                             if (bVar.d == null) {
+47:                                 throw new IllegalStateException("Cannot interact with SDL when the feature is disabled");
+48:                             }
+49:                             if (bVar.a() == e.DISCONNECTED) {
+50:                                 bVar.d.a(usbAccessory);
+51:                                 return;
+52:                             } else {
+53:                                 bVar.j = usbAccessory;
+54:                                 return;
+55:                             }
+56:                         }
+57:                         d dVar = bVar.d;
+58:                         if (dVar == null) {
+59:                             throw new IllegalStateException("Cannot interact with SDL when the feature is disabled");
+60:                         }
+61:                         if (usbAccessory2 != null) {
+62:                             throw new IllegalStateException("There is already a connected USB accessory, did you mean to replace it with onUsbAccessoryReplaced()?");
+63:                         }
+64:                         bVar.i = usbAccessory;
+65:                         dVar.a(usbAccessory);
+66:                         bVar.a.bindService(new Intent(bVar.a, (Class<?>) MobileSdlService.class), bVar.f, 1);
+67:                         return;
+68:                     }
+69:                     return;
+70:                 }
+71:                 UsbAccessory usbAccessory3 = bVar.i;
+72:                 if (usbAccessory3 == null) {
+73:                     return;
+74:                 }
+75:                 try {
+76:                     zEquals = usbAccessory3.equals(usbAccessory);
+77:                 } catch (SecurityException unused) {
+78:                     zEquals = usbAccessory3.hashCode() == usbAccessory.hashCode() ? false : false;
+79:                 }
+80:                 if (zEquals) {
+
+=== sources/c/a/a/m1/d.java ===
+90:         }
+91: 
+92:         @Override // com.smartdevicelink.proxy.interfaces.IProxyListenerBase
+93:         public void onDeleteWindowResponse(DeleteWindowResponse deleteWindowResponse) {
+94:         }
+95: 
+96:         @Override // com.smartdevicelink.proxy.interfaces.IProxyListenerBase
+97:         public void onGetInteriorVehicleDataConsentResponse(GetInteriorVehicleDataConsentResponse getInteriorVehicleDataConsentResponse) {
+98:         }
+99: 
+100:         @Override // com.smartdevicelink.proxy.interfaces.IProxyListenerBase
+101:         public void onOnHMIStatus(OnHMIStatus onHMIStatus) {
+102:             HMILevel hmiLevel = onHMIStatus.getHmiLevel();
+103:             if (z1.b) {
+150:         public void onOnKeyboardInput(OnKeyboardInput onKeyboardInput) {
+151:             d.this.k.a(onKeyboardInput);
+152:         }
+153: 
+154:         @Override // com.smartdevicelink.proxy.interfaces.IProxyListenerBase
+155:         public void onOnTouchEvent(OnTouchEvent onTouchEvent) {
+156:             Iterator<c.a.a.m1.j.a> it = d.this.g.iterator();
+157:             while (it.hasNext()) {
+158:                 it.next().a(onTouchEvent);
+159:             }
+160:         }
+275: 
+276:     public d(Context context) {
+277:         this.a = context;
+278:         this.b = context.getResources().getInteger(R.integer.mobile_sdl_video_frame_rate_default);
+279:         this.f657c = context.getResources().getInteger(R.integer.mobile_sdl_video_iframe_interval_default);
+280:         this.d = context.getResources().getInteger(R.integer.mobile_sdl_video_bit_rate_default);
+281:         this.e = context.getResources().getInteger(R.integer.mobile_sdl_video_dpi_default);
+282:     }
+283: 
+284:     public void a(UsbAccessory usbAccessory) {
+285:         if (this.h != null) {
+286:             throw new IllegalStateException("SdlProxy is already in connected state.");
+287:         }
+288:         if (this.o) {
+289:             boolean z = z1.d;
+290:             return;
+291:         }
+292:         g(c.a.a.j2.e.CONNECTING);
+293:         a aVar = new a(null);
+294:         Resources resources = this.a.getResources();
+295:         String string = resources.getString(R.string.mobile_sdl_app_id);
+296:         String string2 = resources.getString(R.string.mobile_sdl_app_name);
+297:         Vector<AppHMIType> vector = new Vector<>();
+298:         vector.add(AppHMIType.NAVIGATION);
+299:         try {
+300:             SdlProxyALM sdlProxyALMBuild = new SdlProxyBuilder.Builder(aVar, string, string2, Boolean.FALSE, this.a).setVrAppHMITypes(vector).setTransportType(new USBTransportConfig(this.a, usbAccessory)).setCallbackToUIThread(true).build();
+301:             this.h = sdlProxyALMBuild;
+302:             this.i = new c.a.a.m1.h.b(this.a, sdlProxyALMBuild);
+303:             this.j = new c.a.a.m1.k.a(sdlProxyALMBuild, this.b);
+304:             this.k = new c.a.a.m1.i.a(this.h);
+305:         } catch (SdlException e) {
+306:             throw new RuntimeException("Exception caught when creating SdlProxyALM.", e);
+307:         }
+308:     }
+309: 
+310:     public final DisplayMetrics b() {
+311:         Objects.requireNonNull(this.m, "DisplayCapabilities were not obtained from SdlProxyALM.");
+312:         DisplayMetrics displayMetrics = new DisplayMetrics();
+313:         ImageResolution imageResolution = this.m.getScreenParams().getImageResolution();
+314:         displayMetrics.widthPixels = imageResolution.getResolutionWidth().intValue();
+315:         displayMetrics.heightPixels = imageResolution.getResolutionHeight().intValue();
+316:         int i = this.e;
+317:         displayMetrics.densityDpi = i;
+318:         displayMetrics.xdpi = i;
+319:         displayMetrics.ydpi = i;
+320:         float f = i / 160.0f;
+321:         displayMetrics.density = f;
+322:         displayMetrics.scaledDensity = f;
+323:         return displayMetrics;
+324:     }
+325: 
+
+=== sources/c/a/a/l1/b.java ===
+109:         /*
+110:             Code decompiled incorrectly, please refer to instructions dump.
+111:         */
+112:         public void a(c.a.a.j2.e eVar) {
+113:             VehicleType vehicleType;
+114:             int iOrdinal = eVar.ordinal();
+115:             boolean z = true;
+116:             if (iOrdinal != 0 && iOrdinal != 1) {
+117:                 if (iOrdinal == 2) {
+118:                     if (this.a.size() == 0) {
+119:                         b bVar = b.this;
+120:                         g gVar = bVar.new g(null);
+121:                         bVar.c1 = gVar;
+122:                         bVar.W0.v2(gVar);
+123:                         c.a.a.m1.d dVar = (c.a.a.m1.d) b.this.X0;
+124:                         if (!dVar.d()) {
+125:                             throw new IllegalStateException("Cannot call getVehicleType before SDL is connected");
+126:                         }
+127:                         try {
+128:                             vehicleType = dVar.h.getVehicleType();
+129:                         } catch (SdlException unused) {
+130:                         }
+131:                         c.a.a.j2.c cVar = vehicleType != null ? new c.a.a.j2.c(vehicleType.getMake(), vehicleType.getModel(), vehicleType.getModelYear(), vehicleType.getTrim()) : null;
+132:                         if (cVar != null ? b.this.k1.a.contains(cVar) : false) {
+133:                             this.a.add(b.this.new h(null));
+134:                             this.a.add(b.this.new C0173b(null));
+135:                         } else {
+136:                             if (z1.d) {
+137:                                 String str = "The HU isn't whitelisted: " + cVar;
+138:                             }
+139:                             this.a.add(b.this.new d(null));
+140:                         }
+141:                     }
+142:                     z = false;
+143:                 } else {
+144:                     if (iOrdinal != 3 && iOrdinal != 4) {
+145:                         if (iOrdinal != 5) {
+146:                             throw new IllegalArgumentException("Unknown state: " + eVar);
+147:                         }
+148:                         if (this.a.size() == 0) {
+149:                         }
+150:                     }
+151:                     z = false;
+152:                 }
+153:             }
+154:             Iterator<b.a> it = this.a.iterator();
+155:             while (it.hasNext()) {
+156:                 it.next().a(eVar);
+157:             }
+158:             if (z) {
+159:                 this.a.clear();
+160:                 b bVar2 = b.this;
+161:                 g gVar2 = bVar2.c1;
+162:                 if (gVar2 != null) {
+274:                     }
+275:                     c.a.a.c2.a aVar = bVar.i1;
+276:                     c.a.a.m1.d dVar = (c.a.a.m1.d) bVar.X0;
+277:                     if (!dVar.d()) {
+278:                         throw new IllegalStateException("Get display metrics before SDL is connected.");
+279:                     }
+280:                     if (dVar.l == null) {
+281:                         dVar.l = dVar.b();
+282:                     }
+283:                     DisplayMetrics displayMetrics = dVar.l;
+284:                     c.a.a.m1.d dVar2 = (c.a.a.m1.d) b.this.X0;
+285:                     if (!dVar2.d()) {
+286:                         throw new IllegalStateException("Get surface before SDL is connected.");
+287:                     }
+288:                     if (dVar2.l == null) {
+289:                         dVar2.l = dVar2.b();
+290:                     }
+291:                     if (dVar2.n == null) {
+292:                         SdlProxyALM sdlProxyALM = dVar2.h;
+293:                         int i = dVar2.b;
+294:                         int i2 = dVar2.f657c;
+295:                         DisplayMetrics displayMetrics2 = dVar2.l;
+296:                         Surface surfaceCreateOpenGLInputSurface = sdlProxyALM.createOpenGLInputSurface(i, i2, displayMetrics2.widthPixels, displayMetrics2.heightPixels, dVar2.d, false);
+297:                         dVar2.n = surfaceCreateOpenGLInputSurface;
+298:                         if (surfaceCreateOpenGLInputSurface == null) {
+299:                             StringBuilder sbK = c.c.a.a.a.K("SdlProxy cannot create surface for streaming; \nmSdlProxyAlm=");
+300:                             c.a.a.o3.o4.a aVar2 = new c.a.a.o3.o4.a(dVar2.h);
+301:                             aVar2.b("sdlSession");
+302:                             aVar2.e("getProtocolVersion");
+
+=== sources/c/a/a/l1/c.java ===
+1: package c.a.a.l1;
+2: 
+3: import android.content.Context;
+4: import android.content.res.Resources;
+5: import android.content.res.XmlResourceParser;
+6: import java.io.IOException;
+7: import java.util.ArrayList;
+8: import java.util.List;
+9: import org.xmlpull.v1.XmlPullParserException;
+10: 
+11: /* loaded from: classes.dex */
+12: public class c {
+13:     public final List<c.a.a.j2.c> a = new ArrayList();
+14: 
+15:     public c(Context context, int i) throws Resources.NotFoundException {
+16:         try {
+17:             XmlResourceParser xml = context.getResources().getXml(i);
+18:             try {
+19:                 a(xml);
+20:                 xml.close();
+21:             } catch (Throwable th) {
+22:                 try {
+23:                     throw th;
+24:                 } catch (Throwable th2) {
+25:                     if (xml != null) {
+26:                         try {
+27:                             xml.close();
+28:                         } catch (Throwable th3) {
+29:                             th.addSuppressed(th3);
+30:                         }
+31:                     }
+32:                     throw th2;
+33:                 }
+34:             }
+35:         } catch (IOException | XmlPullParserException e) {
+36:             throw new RuntimeException("Exception caught when read white list data", e);
+37:         }
+38:     }
+39: 
+40:     public final void a(XmlResourceParser xmlResourceParser) {
+41:         String name;
+42:         int eventType = xmlResourceParser.getEventType();
+43:         while (eventType != 1) {
+44:             if (eventType == 2 && (name = xmlResourceParser.getName()) != null && name.equals("HeadUnitInfo")) {
+45:                 String attributeValue = xmlResourceParser.getAttributeValue("http://schemas.android.com/apk/res-auto", "mobile_vehicletype_make");
+46:                 String attributeValue2 = xmlResourceParser.getAttributeValue("http://schemas.android.com/apk/res-auto", "mobile_vehicletype_model");
+47:                 String attributeValue3 = xmlResourceParser.getAttributeValue("http://schemas.android.com/apk/res-auto", "mobile_vehicletype_model_year");
+48:                 String attributeValue4 = xmlResourceParser.getAttributeValue("http://schemas.android.com/apk/res-auto", "mobile_vehicletype_trim");
+49:                 if (attributeValue == null || attributeValue2 == null || attributeValue3 == null || attributeValue4 == null) {
+50:                     throw new IllegalArgumentException("Data missing while parsing head unit info from xml");
+51:                 }
+52:                 this.a.add(new c.a.a.j2.c(attributeValue, attributeValue2, attributeValue3, attributeValue4));
+53:             }
+54:             eventType = xmlResourceParser.next();
+55:         }
+56:     }
+57: }
+
+=== sources/c/a/a/j2/c.java ===
+1: package c.a.a.j2;
+2: 
+3: /* loaded from: classes.dex */
+4: public class c {
+5:     public final String a;
+6:     public final String b;
+7: 
+8:     /* renamed from: c, reason: collision with root package name */
+9:     public final String f454c;
+10:     public final String d;
+11: 
+12:     public c(String str, String str2, String str3, String str4) {
+13:         this.a = str;
+14:         this.b = str2;
+15:         this.f454c = str3;
+16:         this.d = str4;
+17:     }
+18: 
+19:     public boolean equals(Object obj) {
+20:         if (obj == this) {
+21:             return true;
+22:         }
+23:         if (!(obj instanceof c)) {
+24:             return false;
+25:         }
+26:         c cVar = (c) obj;
+27:         return cVar.a.equalsIgnoreCase(this.a) && cVar.b.equalsIgnoreCase(this.b) && cVar.f454c.equalsIgnoreCase(this.f454c) && cVar.d.equalsIgnoreCase(this.d);
+28:     }
+29: 
+30:     public String toString() {
+31:         return this.a + ", " + this.b + ", " + this.f454c + ", " + this.d;
+32:     }
+33: }
+
+=== sources/com/smartdevicelink/transport/USBTransport.java ===
+30: /* loaded from: classes.dex */
+31: public class USBTransport extends SdlTransport {
+32:     private static final String ACCESSORY_MANUFACTURER = "SDL";
+33:     private static final String ACCESSORY_MODEL = "Core";
+34:     private static final String ACCESSORY_VERSION = "1.0";
+35:     public static final String ACTION_USB_ACCESSORY_ATTACHED = "com.smartdevicelink.USB_ACCESSORY_ATTACHED";
+334:     public static boolean isAccessorySupported(UsbAccessory usbAccessory) {
+335:         if (usbAccessory == null) {
+336:             return false;
+337:         }
+338:         return "SDL".equals(usbAccessory.getManufacturer()) && ACCESSORY_MODEL.equals(usbAccessory.getModel()) && "1.0".equals(usbAccessory.getVersion());
+339:     }
+340: 
+
+=== sources/com/smartdevicelink/proxy/SdlProxyBuilder.java ===
+42:     private Vector<String> vrSynonyms;
+43: 
+44:     private SdlProxyBuilder() {
+45:         this.service = null;
+46:         this.sdlProxyConfigurationResources = null;
+47:         this.ttsChunks = null;
+48:         this.sShortAppName = null;
+49:         this.vrSynonyms = null;
+50:         this.sdlMessageVersion = null;
+51:         Language language = Language.EN_US;
+52:         this.lang = language;
+53:         this.hmiLang = language;
+54:         this.vrAppHMITypes = null;
+55:         this.autoActivateID = null;
+56:         this.callbackToUIThread = false;
+57:         this.preRegister = false;
+58:         this.sAppResumeHash = null;
+59:         this.sdlSecList = null;
+60:         this.dayColorScheme = null;
+61:         this.nightColorScheme = null;
+62:     }
+63: 
+64:     public static class Builder {
+65:         public SdlProxyBuilder sdlProxyBuilder;
+66: 
+67:         @Deprecated
+68:         public Builder(IProxyListenerALM iProxyListenerALM, String str, String str2, Boolean bool) {
+69:             SdlProxyBuilder sdlProxyBuilder = new SdlProxyBuilder();
+70:             this.sdlProxyBuilder = sdlProxyBuilder;
+71:             sdlProxyBuilder.listener = iProxyListenerALM;
+72:             this.sdlProxyBuilder.appId = str;
+73:             this.sdlProxyBuilder.appName = str2;
+74:             this.sdlProxyBuilder.isMediaApp = bool;
+75:             this.sdlProxyBuilder.mTransport = new BTTransportConfig();
+76:         }
+77: 
+78:         public SdlProxyALM build() {
+79:             SdlProxyALM sdlProxyALM = new SdlProxyALM(this.sdlProxyBuilder.service, this.sdlProxyBuilder.listener, this.sdlProxyBuilder.sdlProxyConfigurationResources, this.sdlProxyBuilder.appName, this.sdlProxyBuilder.ttsChunks, this.sdlProxyBuilder.sShortAppName, this.sdlProxyBuilder.vrSynonyms, this.sdlProxyBuilder.isMediaApp, this.sdlProxyBuilder.sdlMessageVersion, this.sdlProxyBuilder.lang, this.sdlProxyBuilder.hmiLang, this.sdlProxyBuilder.vrAppHMITypes, this.sdlProxyBuilder.appId, this.sdlProxyBuilder.autoActivateID, this.sdlProxyBuilder.dayColorScheme, this.sdlProxyBuilder.nightColorScheme, this.sdlProxyBuilder.callbackToUIThread, this.sdlProxyBuilder.preRegister, this.sdlProxyBuilder.sAppResumeHash, this.sdlProxyBuilder.mTransport);
+80:             sdlProxyALM.setSdlSecurityClassList(this.sdlProxyBuilder.sdlSecList);
+81:             return sdlProxyALM;
+82:         }
+
+=== sources/com/smartdevicelink/proxy/SdlProxyBase.java ===
+3426:     private void processRaiResponse(RegisterAppInterfaceResponse registerAppInterfaceResponse) throws IllegalAccessException, InstantiationException {
+3427:         String make;
+3428:         SdlSecurityBase sdlSecurityBaseNewInstance;
+3429:         if (registerAppInterfaceResponse == null) {
+3430:             return;
+3431:         }
+3432:         this.raiResponse = registerAppInterfaceResponse;
+3433:         VehicleType vehicleType = registerAppInterfaceResponse.getVehicleType();
+3434:         if (vehicleType == null || (make = vehicleType.getMake()) == null || this._secList == null) {
+3435:             return;
+3436:         }
+3437:         Service service = getService();
+3438:         SdlSecurityBase.setAppService(service);
+3439:         if (service == null || service.getApplicationContext() == null) {
+3440:             SdlSecurityBase.setContext(this._appContext);
+3441:         } else {
+3442:             SdlSecurityBase.setContext(service.getApplicationContext());
+3443:         }
+3444:         Iterator<Class<? extends SdlSecurityBase>> it = this._secList.iterator();
+3445:         while (it.hasNext()) {
+3446:             try {
+3447:                 sdlSecurityBaseNewInstance = it.next().newInstance();
+3448:             } catch (Exception unused) {
+3449:             }
+3450:             if (sdlSecurityBaseNewInstance != null && sdlSecurityBaseNewInstance.getMakeList() != null && sdlSecurityBaseNewInstance.getMakeList().contains(make)) {
+3451:                 setSdlSecurity(sdlSecurityBaseNewInstance);
+3452:                 sdlSecurityBaseNewInstance.setAppId(this._appID);
+3453:                 SdlSession sdlSession = this.sdlSession;
+3454:                 if (sdlSession != null) {
+3455:                     sdlSecurityBaseNewInstance.handleSdlSession(sdlSession);
+3456:                     return;
+3457:                 }
+3458:                 return;
+3580: 
+3581:     private VideoStreamingParameters tryStartVideoStream(boolean z, VideoStreamingParameters videoStreamingParameters) {
+3582:         boolean z2;
+3583:         if (this.sdlSession == null) {
+3584:             DebugTool.logWarning(TAG, "SdlSession is not created yet.");
+3585:             return null;
+3586:         }
+3587:         com.smartdevicelink.util.Version version = this.protocolVersion;
+3588:         if (version != null && version.getMajor() >= 5 && !this._systemCapabilityManager.isCapabilitySupported(SystemCapabilityType.VIDEO_STREAMING)) {
+3589:             DebugTool.logWarning(TAG, "Module doesn't support video streaming.");
+3590:             return null;
+3591:         }
+3592:         if (videoStreamingParameters == null) {
+3593:             DebugTool.logWarning(TAG, "Video parameters were not supplied.");
+3594:             return null;
+3595:         }
+3596:         if (!this.navServiceStartResponseReceived || !(z2 = this.navServiceStartResponse) || (z2 && z && !this.sdlSession.isServiceProtected(SessionType.NAV))) {
+3597:             this.sdlSession.setDesiredVideoParams(videoStreamingParameters);
+3598:             this.navServiceStartResponseReceived = false;
+3599:             this.navServiceStartResponse = false;
+3600:             this.navServiceStartRejectedParams = null;
+3601:             SdlSession sdlSession = this.sdlSession;
+3602:             sdlSession.startService(SessionType.NAV, sdlSession.getSessionId(), z);
+3603:             addNavListener();
+3604:             FutureTask<Void> futureTaskCreateFutureTask = createFutureTask(new CallableMethod(RESPONSE_WAIT_TIME));
+3605:             ScheduledExecutorService scheduledExecutorServiceCreateScheduler = createScheduler();
+3606:             scheduledExecutorServiceCreateScheduler.execute(futureTaskCreateFutureTask);
+3607:             while (!this.navServiceStartResponseReceived && !futureTaskCreateFutureTask.isDone()) {
+3608:             }
+3609:             scheduledExecutorServiceCreateScheduler.shutdown();
+3610:         }
+3611:         if (this.navServiceStartResponse) {
+3612:             com.smartdevicelink.util.Version version2 = this.protocolVersion;
+3613:             if (version2 != null && version2.getMajor() < 5) {
+3614:                 this.sdlSession.setAcceptedVideoParams(videoStreamingParameters);
+3615:             }
+3616:             return this.sdlSession.getAcceptedVideoParams();
+3617:         }
+3618:         if (this.navServiceStartRejectedParams != null) {
+3619:             StringBuilder sb = new StringBuilder();
+3620:             for (String str : this.navServiceStartRejectedParams) {
+3621:                 if (sb.length() > 0) {
+3622:                     sb.append(", ");
+3623:                 }
+3624:                 sb.append(str);
+3625:             }
+3626:             StringBuilder sbK = a.K("StartService for nav failed. Rejected params: ");
+3627:             sbK.append(sb.toString());
+3628:             DebugTool.logWarning(TAG, sbK.toString());
+3629:         } else {
+3630:             DebugTool.logWarning(TAG, "StartService for nav failed (rejected params not supplied)");
+3631:         }
+3632:         return null;
+3633:     }
+3634: 
+3635:     /* JADX INFO: Access modifiers changed from: private */
+3790:     public Surface createOpenGLInputSurface(int i, int i2, int i3, int i4, int i5, boolean z) {
+3791:         SdlSession sdlSession = this.sdlSession;
+3792:         if (sdlSession != null && sdlSession.getIsConnected()) {
+3793:             VideoStreamingParameters videoStreamingParameters = new VideoStreamingParameters();
+3794:             videoStreamingParameters.setFrameRate(i);
+3795:             videoStreamingParameters.setInterval(i2);
+3796:             ImageResolution imageResolution = new ImageResolution();
+3797:             imageResolution.setResolutionWidth(Integer.valueOf(i3));
+3798:             imageResolution.setResolutionHeight(Integer.valueOf(i4));
+3799:             videoStreamingParameters.setResolution(imageResolution);
+3800:             videoStreamingParameters.setBitrate(i5);
+3801:             if (tryStartVideoStream(z, videoStreamingParameters) != null) {
+3802:                 SdlSession sdlSession2 = this.sdlSession;
+3803:                 return sdlSession2.createOpenGLInputSurface(i, i2, i3, i4, i5, SessionType.NAV, sdlSession2.getSessionId());
+3804:             }
+3805:         }
+3806:         return null;
+3807:     }
+4490:         RegisterAppInterface registerAppInterface = new RegisterAppInterface(sdlMsgVersion2, str, bool, language == null ? Language.EN_US : language, language2 == null ? Language.EN_US : language2, str3);
+4491:         if (num != null) {
+4492:             registerAppInterface.setCorrelationID(num);
+4493:         }
+4494:         registerAppInterface.setDeviceInfo(deviceInfo);
+4495:         registerAppInterface.setTtsName(vector);
+4496:         registerAppInterface.setNgnMediaScreenAppName(str2 == null ? str : str2);
+4497:         if (vector2 == null) {
+4498:             vector4 = new Vector<>();
+4499:             vector4.add(str);
+4500:         } else {
+4501:             vector4 = vector2;
+4502:         }
+4503:         registerAppInterface.setVrSynonyms(vector4);
+4504:         registerAppInterface.setAppHMIType(vector3);
+4505:         registerAppInterface.setDayColorScheme(templateColorScheme);
+4506:         registerAppInterface.setNightColorScheme(templateColorScheme2);
+4507:         if (this._bAppResumeEnabled && (str4 = this._lastHashID) != null) {
+4508:             registerAppInterface.setHashID(str4);
+4509:         }
+4510:         Intent intentCreateBroadcastIntent = createBroadcastIntent();
+4511:         updateBroadcastIntent(intentCreateBroadcastIntent, "RPC_NAME", FunctionID.REGISTER_APP_INTERFACE.toString());
+4512:         updateBroadcastIntent(intentCreateBroadcastIntent, "TYPE", "request");
+4513:         updateBroadcastIntent(intentCreateBroadcastIntent, "CORRID", registerAppInterface.getCorrelationID().intValue());
+4514:         updateBroadcastIntent(intentCreateBroadcastIntent, "DATA", serializeJSON(registerAppInterface));
+4515:         sendBroadcastIntent(intentCreateBroadcastIntent);
+4516:         sendRPCMessagePrivate(registerAppInterface);
+4517:     }
+4518: 
+4519:     public void releaseEncoder() throws IOException {
+4520:         SdlSession sdlSession = this.sdlSession;
+
+=== sources/com/smartdevicelink/encoder/SdlEncoder.java ===
+15: @TargetApi(18)
+16: /* loaded from: classes.dex */
+17: public class SdlEncoder {
+18:     private static final long KEEPALIVE_INTERVAL_MSEC = 100;
+19:     private static final String TAG = "SdlEncoder";
+20:     private static final String _MIME_TYPE = "video/avc";
+21:     private MediaCodec.BufferInfo mBufferInfo;
+22:     private MediaCodec mEncoder;
+23:     private long mLastEmittedFrameTimestamp;
+24:     private IVideoStreamListener mOutputListener;
+25:     private PipedOutputStream mOutputStream;
+75:             if (iDequeueOutputBuffer == -1) {
+76:                 if (!z) {
+77:                     trySendVideoKeepalive();
+78:                     return;
+79:                 }
+80:             } else if (iDequeueOutputBuffer == -3) {
+81:                 outputBuffers = this.mEncoder.getOutputBuffers();
+82:             } else if (iDequeueOutputBuffer == -2) {
+83:                 if (this.mH264CodecSpecificData == null) {
+84:                     this.mH264CodecSpecificData = EncoderUtils.getCodecSpecificData(this.mEncoder.getOutputFormat());
+85:                 } else {
+86:                     DebugTool.logWarning(TAG, "Output format change notified more than once, ignoring.");
+87:                 }
+88:             } else if (iDequeueOutputBuffer < 0) {
+89:                 continue;
+90:             } else {
+91:                 MediaCodec.BufferInfo bufferInfo = this.mBufferInfo;
+92:                 if ((bufferInfo.flags & 2) != 0) {
+93:                     if (this.mH264CodecSpecificData != null) {
+94:                         bufferInfo.size = 0;
+95:                     } else {
+96:                         DebugTool.logInfo(TAG, "H264 codec specific data not retrieved yet.");
+97:                     }
+98:                 }
+99:                 MediaCodec.BufferInfo bufferInfo2 = this.mBufferInfo;
+100:                 int i = bufferInfo2.size;
+101:                 if (i != 0) {
+102:                     ByteBuffer byteBuffer = outputBuffers[iDequeueOutputBuffer];
+103:                     if ((bufferInfo2.flags & 1) == 0 || (bArr2 = this.mH264CodecSpecificData) == null) {
+104:                         bArr = new byte[i];
+105:                         length = 0;
+106:                     } else {
+107:                         bArr = new byte[bArr2.length + i];
+108:                         System.arraycopy(bArr2, 0, bArr, 0, bArr2.length);
+109:                         length = this.mH264CodecSpecificData.length;
+110:                     }
+111:                     try {
+112:                         byteBuffer.position(this.mBufferInfo.offset);
+113:                         MediaCodec.BufferInfo bufferInfo3 = this.mBufferInfo;
+114:                         byteBuffer.limit(bufferInfo3.offset + bufferInfo3.size);
+115:                         byteBuffer.get(bArr, length, this.mBufferInfo.size);
+128:     public Surface prepareEncoder() {
+129:         this.mBufferInfo = new MediaCodec.BufferInfo();
+130:         MediaFormat mediaFormatCreateVideoFormat = MediaFormat.createVideoFormat(_MIME_TYPE, this.frameWidth, this.frameHeight);
+131:         mediaFormatCreateVideoFormat.setInteger("color-format", 2130708361);
+132:         mediaFormatCreateVideoFormat.setInteger("bitrate", this.bitrate);
+133:         mediaFormatCreateVideoFormat.setInteger("frame-rate", this.frameRate);
+134:         mediaFormatCreateVideoFormat.setInteger("i-frame-interval", this.frameInterval);
+135:         try {
+136:             this.mEncoder = MediaCodec.createEncoderByType(_MIME_TYPE);
+137:         } catch (Exception e) {
+138:             e.printStackTrace();
+139:         }
+140:         MediaCodec mediaCodec = this.mEncoder;
+141:         if (mediaCodec == null) {
+142:             return null;
+143:         }
+144:         mediaCodec.configure(mediaFormatCreateVideoFormat, (Surface) null, (MediaCrypto) null, 1);
+145:         return this.mEncoder.createInputSurface();
+146:     }
+147: 
+148:     public void releaseEncoder() throws IOException {
+
+=== sources/c/a/a/m1/j/b.java ===
+57:     /* JADX WARN: Removed duplicated region for block: B:46:0x0170  */
+58:     @Override // c.a.a.m1.j.a
+59:     /*
+60:         Code decompiled incorrectly, please refer to instructions dump.
+61:     */
+62:     public void a(OnTouchEvent onTouchEvent) {
+63:         boolean z;
+64:         int i;
+65:         int iB;
+66:         int i2;
+67:         MotionEvent motionEvent;
+68:         int iA;
+69:         int i3;
+70:         int iA2;
+71:         TouchType touchType;
+72:         TouchType type = onTouchEvent.getType();
+73:         this.a.f662c = type;
+74:         Iterator<TouchEvent> it = onTouchEvent.getEvent().iterator();
+75:         while (true) {
+76:             z = true;
+77:             if (!it.hasNext()) {
+78:                 break;
+79:             }
+80:             TouchEvent next = it.next();
+81:             int iIntValue = next.getId().intValue();
+82:             C0185b c0185b = this.a;
+83:             MotionEvent.PointerProperties pointerProperties = new MotionEvent.PointerProperties();
+84:             pointerProperties.id = iIntValue;
+85:             pointerProperties.toolType = 1;
+86:             TouchCoord touchCoord = next.getTouchCoordinates().get(0);
+87:             MotionEvent.PointerCoords pointerCoords = new MotionEvent.PointerCoords();
+88:             pointerCoords.x = touchCoord.getX().intValue();
+89:             pointerCoords.y = touchCoord.getY().intValue();
+90:             pointerCoords.pressure = 1.0f;
+91:             c0185b.a.put(iIntValue, new C0185b.a(c0185b, iIntValue, pointerProperties, pointerCoords, null));
+92:             if (c0185b.f662c == TouchType.MOVE && !c0185b.b.contains(Integer.valueOf(iIntValue))) {
+
+=== sources/c/a/a/m1/b.java ===
+95:     public b(Context context, y yVar, h hVar) {
+96:         this.a = context;
+97:         this.b = yVar;
+98:         SharedPreferences sharedPreferences = context.getSharedPreferences("com.tomtom.navui.settings", 0);
+99:         this.f656c = sharedPreferences;
+100:         boolean z = sharedPreferences.getBoolean("com.tomtom.mobile.setting.MOBILE_SDL_ENABLED", context.getResources().getBoolean(R.bool.mobile_sdl_enabled_default));
+101:         this.g = z;
+102:         if (!z) {
+103:             this.d = null;
+104:             return;
+105:         }
+106:         MobileSystemApplication mobileSystemApplication = (MobileSystemApplication) hVar;
+107:         mobileSystemApplication.e(new g(((MobileSystemApplication) yVar).W0, this));
+108:         mobileSystemApplication.e(new f(context, this));
+109:         if (sharedPreferences.getBoolean("com.tomtom.mobile.setting.MOBILE_SDL_SDK_LOGCAT_ENABLED", false)) {
+110:             DebugTool.enableDebugTool();
+111:         } else {
+112:             DebugTool.disableDebugTool();
+113:         }
+114:         d dVar = new d(context);
+115:         this.d = dVar;
+116:         dVar.f.add(new C0183b(null));
