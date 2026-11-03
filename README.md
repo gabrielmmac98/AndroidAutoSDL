@@ -30,3 +30,5 @@ O código da ponte parte do [Open Headunit](https://github.com/andreknieriem/ope
 Versão mais recente: Bridge 0.5, correção da SecurityException no receptor USB interno do SDK SDL. Veja artifacts/AndroidAutoSDL-Bridge/v0.5. Validação na central pendente.
 
 Teste mais recente: Bridge 0.6 — App ID 3610601450 preservado; nome AA SDL Bridge e ícone verde AA. Validação física pendente.
+
+Versão atual: Bridge 0.7 — identidade TomTom restaurada, escala explícita de vídeo via EGL e correções de recuperação. Veja artifacts/AndroidAutoSDL-Bridge/v0.7/analise-e-teste.md. Validação Toyota pendente.

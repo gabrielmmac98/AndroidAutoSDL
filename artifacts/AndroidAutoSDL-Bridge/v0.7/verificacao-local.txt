@@ -1,0 +1,3 @@
+--------- beginning of main
+11-03 21:20:59.051 24559 24821 I SDL_SELFTEST: PASS frames=45 encodedPackets=47
+11-03 21:22:40.516 25686 25887 I SDL_SELFTEST: PASS frames=45 encodedPackets=47
