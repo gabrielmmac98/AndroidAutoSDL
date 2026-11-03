@@ -26,3 +26,5 @@ Este repositório usa **somente a branch `main`**. Novas versões e correções 
 ## Licença e origem
 
 O código da ponte parte do [Open Headunit](https://github.com/andreknieriem/open-headunit), snapshot no commit `667346188bee1c50f300e245f373d13942fbd220`, sob AGPL-3.0. A licença e o aviso de copyright estão incluídos na raiz, e os pacotes-fonte preservam os avisos originais.
+
+Versão mais recente: Bridge 0.5, correção da SecurityException no receptor USB interno do SDK SDL. Veja artifacts/AndroidAutoSDL-Bridge/v0.5. Validação na central pendente.
