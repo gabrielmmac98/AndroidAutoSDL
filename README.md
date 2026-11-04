@@ -38,3 +38,5 @@ Versão atual: Bridge 0.8 — corrige falso display stall local que encerrava v�
 Versão atual: Bridge 0.9 — página e perfil dedicados à projeção SDL, resolução do carro, DPI separado e controles no telefone. Veja artifacts/AndroidAutoSDL-Bridge/v0.9/fluxo-sdl.md. Validação física pendente.
 
 Versão atual: Bridge 0.10 — calibração de proporção física independente do DPI. A 0.9 teve interface, touch e áudio Bluetooth confirmados pelo usuário; proporção fina ainda em calibração.
+
+Versão atual: Bridge 0.11 — página Material SDL, início automático condicionado à autorização, parada de AAP corrigida, ajustes e preset 115% preservados. Bloqueios de segurança da central mantidos.

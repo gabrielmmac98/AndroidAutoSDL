@@ -1,0 +1,7 @@
+11-04 16:09:35.282 21792 21792 I SDL_PLAYBACK_TEST: PASS auto-start gates: authorization, preference, manual stop, once per session, connected, starting
+11-04 16:09:35.307 21792 21792 I SDL_PROFILE_TEST: PASS 800x480; PAR 10000/10670; DPI 160/200; normal preferences preserved
+11-04 16:11:42.552 23124 23124 I SDL_PLAYBACK_TEST: PASS auto-start gates: authorization, preference, manual stop, once per session, connected, starting
+11-04 16:11:42.573 23124 23124 I SDL_PROFILE_TEST: PASS 800x480; PAR 10000/10670; DPI 160/200; normal preferences preserved
+11-04 16:13:19.281 24152 24152 I SDL_PLAYBACK_TEST: PASS auto-start gates: authorization, preference, manual stop, once per session, connected, starting
+11-04 16:13:19.299 24152 24152 I SDL_PROFILE_TEST: PASS 800x480; PAR 10000/10670; DPI 160/200; normal preferences preserved
+UI Material verificada no emulador; checkbox manual removido; opção auto_video persistida como true; sem central, início permaneceu bloqueado. Parada de transporte AAP e início automático com Toyota real não foram exercitados no emulador.
