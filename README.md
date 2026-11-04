@@ -36,3 +36,5 @@ Versão atual: Bridge 0.7 — identidade TomTom restaurada, escala explícita de
 Versão atual: Bridge 0.8 — corrige falso display stall local que encerrava vídeo SDL funcional. Sucesso de imagem e toque na Toyota confirmado pelo usuário na 0.7; estabilidade da 0.8 pendente.
 
 Versão atual: Bridge 0.9 — página e perfil dedicados à projeção SDL, resolução do carro, DPI separado e controles no telefone. Veja artifacts/AndroidAutoSDL-Bridge/v0.9/fluxo-sdl.md. Validação física pendente.
+
+Versão atual: Bridge 0.10 — calibração de proporção física independente do DPI. A 0.9 teve interface, touch e áudio Bluetooth confirmados pelo usuário; proporção fina ainda em calibração.

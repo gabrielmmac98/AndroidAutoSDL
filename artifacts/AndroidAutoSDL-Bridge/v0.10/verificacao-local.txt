@@ -1,0 +1,2 @@
+11-04 11:12:27.308 12368 12368 I SDL_PROFILE_TEST: PASS 800x480; PAR 10000/10670; DPI 160/200; normal preferences preserved
+UI: botão Comparar proporção 16:9 mudou rótulo para 106.7%; sdl_projection.xml persistiu aspect_e4=10670 e dpi=160. Sem validação física da proporção.
