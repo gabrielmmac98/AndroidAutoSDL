@@ -40,3 +40,5 @@ Versão atual: Bridge 0.9 — página e perfil dedicados à projeção SDL, reso
 Versão atual: Bridge 0.10 — calibração de proporção física independente do DPI. A 0.9 teve interface, touch e áudio Bluetooth confirmados pelo usuário; proporção fina ainda em calibração.
 
 Versão atual: Bridge 0.11 — página Material SDL, início automático condicionado à autorização, parada de AAP corrigida, ajustes e preset 115% preservados. Bloqueios de segurança da central mantidos.
+
+Versão atual: Bridge 0.12 — DD_ON passa a informar restrições ao Android Auto, sem encerrar navegação autorizada. HMI e videoStreamingState continuam respeitados. Corrige a regra excessiva da 0.11.
