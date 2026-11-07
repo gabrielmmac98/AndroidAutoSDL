@@ -1,0 +1,2 @@
+--------- beginning of main
+11-07 18:47:50.764 13128 13300 I SDL_MIC_TEST: PASS actual AudioRecord capture bytes=49152 route=Em uso: microfone do celular

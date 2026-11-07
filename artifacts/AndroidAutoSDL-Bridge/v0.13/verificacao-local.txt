@@ -1,0 +1,17 @@
+Verificação em 07/11/2026 — Bridge 0.13
+
+APROVADO
+- :app:assembleGithubDebug --offline --no-daemon --max-workers=2 -Pkotlin.incremental=false -Pkotlin.compiler.execution.strategy=in-process: BUILD SUCCESSFUL.
+- Assinatura APK verificada com apksigner 36.0.0; certificado igual às versões anteriores.
+- Instalação adb -r aprovada.
+- SdlMicPolicyCheck.java executado contra as classes Kotlin realmente compiladas: 9 verificações aprovadas (chaves/default, tipos de entrada, A2DP excluído). Ver politica-microfone.txt. A verificação de chaves não é, por si só, um teste de persistência em disco.
+- SdlMicrophoneSelfTestActivity: AudioRecord real do emulador, Android confirmou TYPE_BUILTIN_MIC (15), 49152 bytes captados, sem divergência de rota. Ver captura-emulador.txt. O teste usa uma Activity visível e um responsável de foreground simulado; não comprova o caminho completo de permissões do serviço Android Auto.
+- Página SDL inspecionada visualmente e via UIAutomator; diálogo contém Automático/Celular/Bluetooth.
+- Selecionado Automático pelo diálogo, arquivo sdl_projection.xml confirmado com microphone=auto, processo encerrado e reaberto: interface continuou mostrando Automático. Seleção restaurada a Celular e arquivo confirmado microphone=phone. Configurações de DPI, aspecto e início automático preservadas.
+- Regressões locais existentes: perfil 800x480, DPI160/200, PAR10000/10670, política de início automático e autorização NAV/restrições aprovadas. Ver regressao-perfil.txt. São testes de lógica/geometria, não de condução na Toyota.
+
+LIMITES / IMPEDIMENTOS
+- O teste JUnit/Robolectric SdlMicrophoneTest.kt foi incluído no fonte, mas não executou: resolução de dependências de teste falhou por indisponibilidade de repo.maven.apache.org (incluindo ICU/sqlite/auto-value/bcprov). Não declarar esse conjunto como aprovado.
+- Duas tentativas iniciais de build em concorrência causaram conflito do cache Kotlin; a compilação final foi executada isoladamente, sem compilação incremental.
+- Sem teste físico de microfone Bluetooth SCO/BLE, sem reconhecimento de voz real pelo assistente e sem validação no telefone/Toyota PLAY+ nesta versão. O emulador confirma captura/rota de software, não a qualidade acústica do telefone.
+- O caminho de reprodução de mídia continua existente; nenhuma transmissão de áudio SDL pelo USB foi implementada.

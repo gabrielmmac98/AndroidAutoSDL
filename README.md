@@ -42,3 +42,5 @@ Versão atual: Bridge 0.10 — calibração de proporção física independente 
 Versão atual: Bridge 0.11 — página Material SDL, início automático condicionado à autorização, parada de AAP corrigida, ajustes e preset 115% preservados. Bloqueios de segurança da central mantidos.
 
 Versão atual: Bridge 0.12 — DD_ON passa a informar restrições ao Android Auto, sem encerrar navegação autorizada. HMI e videoStreamingState continuam respeitados. Corrige a regra excessiva da 0.11.
+
+Versão atual: Bridge 0.13 — seleção de microfone exclusiva do SDL (Celular por padrão, Automático ou Bluetooth), entrada efetiva indicada na página e preferência salva. APK e instruções em [artifacts/AndroidAutoSDL-Bridge/v0.13](artifacts/AndroidAutoSDL-Bridge/v0.13/microfone-sdl.md). Captura interna e persistência verificadas no emulador; telefone/Toyota pendentes.

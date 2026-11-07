@@ -1,0 +1,1 @@
+PASS 9 microphone policy checks: phone default, persisted keys, built-in input, Bluetooth SCO/BLE, A2DP excluded, automatic
