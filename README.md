@@ -1,46 +1,97 @@
 # AndroidAutoSDL
 
-Protótipos e evidências para investigar a projeção SmartDeviceLink (SDL) na Toyota PLAY+ do Yaris 2019 e avaliar uma ponte Android Auto → SDL.
+**Android Auto projection over SmartDeviceLink for the Toyota PLAY+.**
 
-## Estado
+[English](README.md) · [Português brasileiro](README.pt-BR.md)
 
-- **SDL Probe 0.5:** registrada no teste de 03/11/2026 com o app visível na central e ensaios de vídeo sintético e toque. Os registros e limites do ensaio estão em [`docs/testing/resultado-validado-2026-11-03.md`](docs/testing/resultado-validado-2026-11-03.md).
-- **AndroidAutoSDL-Bridge 0.3:** no primeiro teste físico relatado, abriu no telefone mas não apareceu na lista SDL da central. Não houve confirmação de registro.
-- **AndroidAutoSDL-Bridge 0.4:** build diagnóstico que reenumera o acessório USB após a permissão, confere a permissão novamente, usa o contexto da tela ativa como o Probe e registra as respostas SDL. O reteste físico ainda está pendente.
-- **Bridge 0.1:** mantida para histórico; apresentava conflito de permissão e fechamento no layout retrato.
-- **Bridge 0.2:** registrada em `artifacts/AndroidAutoSDL-Bridge/v0.2/README.md`; o APK e o pacote-fonte isolado não estavam disponíveis ao montar o repositório.
+<img src="docs/images/open-headunit-icon.png" width="96" height="96" alt="Open Headunit icon" />
 
-## Organização
+AndroidAutoSDL is an experimental extension of [Open Headunit](https://github.com/andreknieriem/open-headunit). It runs on an Android phone and bridges the Android Auto interface to a SmartDeviceLink (SDL) head unit over USB, bringing navigation and touch interaction to existing hardware without native Android Auto.
 
-- `artifacts/AndroidAutoSDL-Bridge/`: APKs, hashes, fontes compactadas e patches por versão.
-- `artifacts/SDL-Probe/`: APKs, hashes, fontes e instruções do probe SDL 0.1–0.5.
-- `docs/analysis/`: análise estática do TomTom, evidências SDL, bytecode selecionado e metadados.
-- `docs/testing/`: resultados na Toyota e estado da ponte.
+Development and physical testing focus on the **Toyota PLAY+ in a 2019 Toyota Yaris**. Other vehicles and firmware versions have not been validated.
 
-O APK mais recente da ponte é `artifacts/AndroidAutoSDL-Bridge/v0.4/AndroidAuto-SDL-Bridge-0.4.apk`. Os hashes SHA-256 acompanham cada APK.
+## Origin and purpose
 
-## Fluxo de versões
+[Open Headunit, maintained by andreknieriem and its contributors](https://github.com/andreknieriem/open-headunit), provides the Android Auto receiver, Self Mode, audio handling and much of the application UI. This project builds on that work; it does not implement Android Auto from scratch.
 
-Este repositório usa **somente a branch `main`**. Novas versões e correções devem ser registradas em commits diretos em `main`; não criar branches nem pull requests.
+Our starting snapshot is upstream commit [`667346188bee1c50f300e245f373d13942fbd220`](https://github.com/andreknieriem/open-headunit/tree/667346188bee1c50f300e245f373d13942fbd220). AndroidAutoSDL adds SDL transport and a dedicated projection profile. Its goals are reliable navigation and touch on the tested central, separate settings for this mode, and a reproducible record of builds and tests. The original TomTom APK was inspected as a compatibility reference and was not modified.
 
-## Licença e origem
+## What this project adds
 
-O código da ponte parte do [Open Headunit](https://github.com/andreknieriem/open-headunit), snapshot no commit `667346188bee1c50f300e245f373d13942fbd220`, sob AGPL-3.0. A licença e o aviso de copyright estão incluídos na raiz, e os pacotes-fonte preservam os avisos originais.
+- USB SDL registration, accessory permissions, display capability discovery and diagnostics using SDL Android SDK 4.12.2.
+- An EGL/SurfaceTexture relay between Android Auto decoding and SDL H.264 encoding, with scaling and fixes for local-display watchdog interruptions.
+- SDL touch events mapped into Android Auto coordinates.
+- A dedicated SDL page and phone streaming screen, panel geometry, saved DPI and physical aspect correction, including a 115% preset.
+- Start, stop, disconnect and optional automatic video start when authorized by the central.
+- Independent microphone selection: phone, automatic or Bluetooth, with the effective input shown during capture.
+- An optional Open Headunit icon upload after SDL registration, added in 0.14 without changing the compatibility identity.
+- Driving notifications forwarded as Android Auto restrictions; head-unit HMI and video-streaming refusals remain respected.
 
-Versão mais recente: Bridge 0.5, correção da SecurityException no receptor USB interno do SDK SDL. Veja artifacts/AndroidAutoSDL-Bridge/v0.5. Validação na central pendente.
+```text
+Android Auto → Open Headunit SDL profile → frame relay / H.264 → USB SDL → PLAY+
+Android Auto ← touch-coordinate mapping ← SDL touch events ←─────────── PLAY+
+Media audio ──────────────────────────── Bluetooth ───────────────────→ speakers
+Selected microphone ──────────────────→ Android Auto voice input
+```
 
-Teste mais recente: Bridge 0.6 — App ID 3610601450 preservado; nome AA SDL Bridge e ícone verde AA. Validação física pendente.
+Media audio currently uses **Bluetooth**, not SDL USB audio. With media-only Bluetooth, select **Celular / Phone** for voice input. Android may override a preferred microphone route; the SDL page reports the effective input. Telephone-call routing remains controlled by the phone and Bluetooth system.
 
-Versão atual: Bridge 0.7 — identidade TomTom restaurada, escala explícita de vídeo via EGL e correções de recuperação. Veja artifacts/AndroidAutoSDL-Bridge/v0.7/analise-e-teste.md. Validação Toyota pendente.
+## Latest build and test status
 
-Versão atual: Bridge 0.8 — corrige falso display stall local que encerrava vídeo SDL funcional. Sucesso de imagem e toque na Toyota confirmado pelo usuário na 0.7; estabilidade da 0.8 pendente.
+**Bridge 0.14 — experimental icon build**
 
-Versão atual: Bridge 0.9 — página e perfil dedicados à projeção SDL, resolução do carro, DPI separado e controles no telefone. Veja artifacts/AndroidAutoSDL-Bridge/v0.9/fluxo-sdl.md. Validação física pendente.
+[APK](artifacts/AndroidAutoSDL-Bridge/v0.14/AndroidAuto-SDL-Bridge-0.14.apk) · [SHA-256](artifacts/AndroidAutoSDL-Bridge/v0.14/AndroidAuto-SDL-Bridge-0.14.sha256.txt) · [Full source](artifacts/AndroidAutoSDL-Bridge/v0.14/fonte.zip) · [Version notes](artifacts/AndroidAutoSDL-Bridge/v0.14/icone-e-validacao.md)
 
-Versão atual: Bridge 0.10 — calibração de proporção física independente do DPI. A 0.9 teve interface, touch e áudio Bluetooth confirmados pelo usuário; proporção fina ainda em calibração.
+| Feature | Evidence and limits |
+| --- | --- |
+| Registration, Android Auto picture and touch | Owner-confirmed on the test PLAY+. |
+| Stable video, dedicated UI, DPI/aspect and Bluetooth playback | Confirmed in earlier physical tests; the owner preferred 115% aspect correction. |
+| Dedicated microphone selection | Capture and preference persistence checked locally in 0.13; phone/vehicle test pending. |
+| Open Headunit icon | Added in 0.14; acceptance and appearance on the PLAY+ require a physical test. |
+| Driving-state transitions | Software handling implemented in 0.12; actual authorization while moving is not guaranteed. |
+| Other head units | Not validated. |
 
-Versão atual: Bridge 0.11 — página Material SDL, início automático condicionado à autorização, parada de AAP corrigida, ajustes e preset 115% preservados. Bloqueios de segurança da central mantidos.
+An SDL acknowledgement alone does not prove that an image or icon appeared. Version notes distinguish local checks from vehicle tests.
 
-Versão atual: Bridge 0.12 — DD_ON passa a informar restrições ao Android Auto, sem encerrar navegação autorizada. HMI e videoStreamingState continuam respeitados. Corrige a regra excessiva da 0.11.
+### Compatibility identity
 
-Versão atual: Bridge 0.13 — seleção de microfone exclusiva do SDL (Celular por padrão, Automático ou Bluetooth), entrada efetiva indicada na página e preferência salva. APK e instruções em [artifacts/AndroidAutoSDL-Bridge/v0.13](artifacts/AndroidAutoSDL-Bridge/v0.13/microfone-sdl.md). Captura interna e persistência verificadas no emulador; telefone/Toyota pendentes.
+The central accepted the experimental identity **TomTom / App ID 3610601450**. An earlier build changed both name and icon and failed to appear; restoring the identity restored registration. Those changes were not isolated, so the exact acceptance rule is not fully known.
+
+The central may still list this bridge as **TomTom**. This is a compatibility constraint, not a claim of affiliation or approval by Toyota, TomTom, Google or the SDL Consortium. Avoid running the original TomTom and the bridge simultaneously with that identity. Version 0.14 changes only artwork and uses session-scoped uploads; central-side caching may still affect the icon.
+
+## Getting started
+
+1. Install the APK on the phone. Package: `br.local.aasdlbridge`. Current builds can update the preceding bridge installation with the same signing certificate.
+2. Enable Android Auto developer settings and start **Headunit Server**, required by the Self Mode flow used here.
+3. Connect to the PLAY+ USB port and grant accessory access.
+4. Open **SDL** in the app, connect and open its registered application on the head unit as needed. Start video when authorized, or enable automatic video start.
+5. Adjust DPI/aspect while video is stopped. Preferences are saved.
+6. With media-only Bluetooth, select **Celular** and grant microphone access.
+
+To test the icon, leave **Enviar ícone à central** enabled and reconnect SDL. If there is a regression, disable the option and reconnect; cached artwork may remain. [Version 0.13](artifacts/AndroidAutoSDL-Bridge/v0.13) remains available.
+
+Configure and perform manual phone-side tests while parked. Streaming authorization depends on the head unit.
+
+## Repository layout and building
+
+This repository stores **versioned delivery artifacts**, rather than a conventional source tree at its root:
+
+- [Bridge artifacts](artifacts/AndroidAutoSDL-Bridge/): APKs, hashes, full source snapshots, patches and version notes.
+- [SDL Probe artifacts](artifacts/SDL-Probe/): diagnostic prototypes used to establish registration, video and touch compatibility.
+- [Analysis](docs/analysis/) and [test records](docs/testing/): protocol evidence, physical results and limitations.
+
+Extract a version's `fonte.zip`, configure the Android SDK and use **JDK 21** with the included wrapper:
+
+```powershell
+.\gradlew.bat :app:assembleGithubDebug --no-daemon
+```
+
+The source specifies compile SDK 36, NDK 29.0.14206865 and CMake 3.22.1. Each patch is a full diff against the upstream snapshot above: use the full archive **or** apply the patch to that exact snapshot, not both. Test requirements and outcomes are recorded per version.
+
+Changes go directly to **main**, preserving earlier artifact versions.
+
+## Credits and license
+
+The main application and Android Auto receiver come from [Open Headunit](https://github.com/andreknieriem/open-headunit) and its contributors, including the original work credited upstream. SDL integration uses the [SmartDeviceLink Android library](https://github.com/smartdevicelink/sdl_android). The launcher artwork comes from the same Open Headunit snapshot.
+
+The derived application remains under **AGPL-3.0**. See [LICENSE](LICENSE) and the [inherited copyright notice](COPYRIGHT_MICHAEL_REID_GPLv3AFFERO.txt). Source archives preserve upstream notices; dependencies retain their respective licenses.

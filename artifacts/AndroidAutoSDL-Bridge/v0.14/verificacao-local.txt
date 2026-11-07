@@ -1,0 +1,8 @@
+11-07 19:00:11.599 20539 20539 I SDL_PLAYBACK_TEST: PASS auto-start gates: authorization, preference, manual stop, once per session, connected, starting
+11-07 19:00:11.599 20539 20539 I SDL_NAV_TEST: PASS NAV authorization: FULL + streamable; DD_ON forwarded as AAP restrictions 27
+11-07 19:00:11.747 20539 20539 I SDL_ICON_TEST: PASS launcher drawable rendered; PNG/JPEG/BMP 96x64 decoded; invalid size rejected; 128x128 PNG saved
+11-07 19:00:11.756 20539 20539 I SDL_PROFILE_TEST: PASS 800x480; PAR 10000/10670; DPI 160/200; normal preferences preserved
+11-07 19:00:54.079 21056 21056 I SDL_PLAYBACK_TEST: PASS auto-start gates: authorization, preference, manual stop, once per session, connected, starting
+11-07 19:00:54.079 21056 21056 I SDL_NAV_TEST: PASS NAV authorization: FULL + streamable; DD_ON forwarded as AAP restrictions 27
+11-07 19:00:54.126 21056 21056 I SDL_ICON_TEST: PASS launcher drawable rendered; PNG/JPEG/BMP 96x64 decoded; invalid size rejected; 128x128 PNG saved
+11-07 19:00:54.130 21056 21056 I SDL_PROFILE_TEST: PASS 800x480; PAR 10000/10670; DPI 160/200; normal preferences preserved
